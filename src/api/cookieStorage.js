@@ -12,3 +12,8 @@ export function getCookies(key){
 export function removeCookies(key){
     return Cookies.remove(key)
 }
+
+//获取公司id
+export function getCompanyId(){
+    return Cookies.get('currentCompanyId')
+}

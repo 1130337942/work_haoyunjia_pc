@@ -30,7 +30,7 @@
                             type="text"
                             size="mini"
                             class="color-FD6427"
-                            @click="() => append(data)"
+                            @click="() => editRolesFn(data)"
                             v-if="data.hierarchy == 1">
                             修改
                         </el-button>
@@ -42,7 +42,7 @@
         <div class="cont-right">
             <div class="cont1">
                 <span class="fz-18 font-bold">角色1</span>
-                <div class="color-FD6427 fz-14 edit-txt">修改</div>
+                <div @click="editRole_Fn" class="color-FD6427 fz-14 edit-txt">修改</div>
             </div>
             <div class="cont2">
                 <div class="div-c2-1">
@@ -54,12 +54,13 @@
                    <el-button type="primary">保存</el-button>
                 </div><!-- :load="load" lazy border--->
                 <el-table 
-                        :data="tableData1"
+                        :data="tableTreeData"
                         style="width: 100%"
                         row-key="id"
-                        :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
+                        height="400"
+                        :tree-props="{children: 'resources', hasChildren: 'hasChildren'}">
                     <el-table-column
-                        prop="date"
+                        prop="name"
                         label="功能及权限"
                         width="180">
                     </el-table-column>
@@ -73,7 +74,7 @@
                         </template>
                         <template slot-scope="scope">
                             <!-- {{scope.row.name}} -->
-                            <el-checkbox v-model="checked"></el-checkbox>
+                            <el-checkbox v-if="scope.row.status==1" v-model="checked"></el-checkbox>
                         </template>
                    
                     </el-table-column>
@@ -86,7 +87,7 @@
                             <el-checkbox v-model="checked" ></el-checkbox>
                         </template>
                         <template slot-scope="scope">
-                            <el-checkbox v-model="checked"></el-checkbox>
+                            <el-checkbox v-if="scope.row.status==1"  v-model="checked"></el-checkbox>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -96,7 +97,7 @@
                         成员列表
                     </div>
                     <div>
-                        <el-button type="primary">添加</el-button>
+                        <el-button @click="addMembersFn" type="primary">添加</el-button>
                         <el-button type="danger">移除</el-button>
                     </div>
                 </div>
@@ -128,27 +129,39 @@
                 </el-table>
             </div>
         </div>
-        <add-role-el :isRokeShow='isRokeShow'
+        <add-role-el :isShow='isRoleShow'
         @confirmDialogAddRoleFn='confirmDialogAddRoleFn'
-        @closeDialogAddRoleFn='closeDialogAddRoleFn'>
+        @closeDialogAddRoleFn='closeDialogAddRoleFn'
+        ref="addRoleDialog">
         </add-role-el>
+        <add-members-el 
+        :isMembersShow='isMembersShow'
+        @confirmDialogMembersFn='confirmDialogMembersFn'
+        @closeDialogMembersFn='closeDialogMembersFn'>
+        </add-members-el>
      </div>
  </template>
  
  <script>
-    import addRoleEl from '@/components/mgDialog/addRole'
+    import addRoleEl from '@/components/mgDialog/addRole';
+    import addMembersEl from '@/components/mgDialog/addMembers';
+    import { getRoleSetByCompanyId,getResourceList } from '@/api/mgModule/authorityApi';
+    import { getCompanyId } from '@/api/cookieStorage'
     let id = 1000;
     export default {
         
         data(){
             return{
-                isRokeShow:false,//添加角色对话框是否显示
+                isRoleShow:false,//添加角色对话框是否显示
+                isMembersShow:false,//添加角色成员对话框显示
+                companyId:getCompanyId(),//公司id
+                tableTreeData:[],//权限列表数据
                 icon1:require('@/assets/img/management/Permissions_1.png'),
                 icon2:require('@/assets/img/management/Permissions_2.png'),
                 searchVal:'',
                 data: [{
                     id: 1,
-                    label: '一级 1',
+                    label: '角色组 1',
                     hierarchy:1,
                     children: [{
                         hierarchy:2,
@@ -164,7 +177,7 @@
                     }]
                 }, {
                     id: 2,
-                    label: '一级 2',
+                    label: '角色组 2',
                     hierarchy:1,
                     children: [{
                         hierarchy:2,
@@ -177,7 +190,7 @@
                     }]
                 }, {
                     id: 3,
-                    label: '一级 3',
+                    label: '角色组 3',
                     hierarchy:1,
                     children: [{
                         hierarchy:2,
@@ -269,44 +282,108 @@
             }
         },
         components:{
-            addRoleEl,
+            addRoleEl,//添加角色和角色组
+            addMembersEl,//添加成员
         },
         watch: {
             searchVal(val) {
                 this.$refs.tree.filter(val);
             }
         },
+        created(){
+            //角色列表
+            this.getRoleSetByCompanyIdFn();
+            this.getResourceListFn();
+        },
         methods: {
-            //添加角色-显示弹框
+            //添加角色-显示对话框
             addRoleFn(){
-                this.isRokeShow = true
+                this.isRoleShow = true
+                let obj = {
+                    isAddEdit : true,//添加/编辑 --- true添加 false编辑
+                    isRole : true,//角色/角色组--- true角色 fales角色组
+                }
+                this.$refs.addRoleDialog.addRoleDialogFn(obj)
+              
+            },
+             //编辑角色组-显示弹框
+            editRolesFn(data) {
+                // const newChild = { id: id++, label: 'testtest', children: [] };
+                // if (!data.children) {
+                // this.$set(data, 'children', []);
+                // }
+                // data.children.push(newChild);
+
+                this.isRoleShow = true;
+                let obj = {
+                    isAddEdit : false,//添加/编辑 --- true添加 false编辑
+                    isRole : false,//角色/角色组--- true角色 fales角色组
+                }
+                this.$refs.addRoleDialog.addRoleDialogFn(obj)
+            },
+            //编辑角色-显示弹框
+            editRole_Fn(){
+                this.isRoleShow = true;
+                let obj = {
+                    isAddEdit : false,//添加/编辑 --- true添加 false编辑
+                    isRole : true,//角色/角色组--- true角色 fales角色组
+                }
+                this.$refs.addRoleDialog.addRoleDialogFn(obj)
             },
             //接收子组件事件-添加角色-确定事件
             confirmDialogAddRoleFn(){
-                this.isRokeShow = false
+                this.isRoleShow = false
             },
             //接收子组件事件-添加角色-取消事件
             closeDialogAddRoleFn(){
-                this.isRokeShow = false
+                this.isRoleShow = false
+            },
+            //添加成员-显示对话框
+            addMembersFn(){
+                this.isMembersShow = true
+            },
+            //接收子组件事件-添加角色成员-成功事件
+            confirmDialogMembersFn(){
+                this.isMembersShow = false
+            },
+            //接收子组件事件-添加角色成员-取消事件
+            closeDialogMembersFn(){
+                 this.isMembersShow = false
             },
             filterNode(value, data) {
                 if (!value) return true;
                 return data.label.indexOf(value) !== -1;
             },
-            append(data) {
-                const newChild = { id: id++, label: 'testtest', children: [] };
-                if (!data.children) {
-                this.$set(data, 'children', []);
-                }
-                data.children.push(newChild);
-            },
-
+           
             remove(node, data) {
                 const parent = node.parent;
                 const children = parent.data.children || parent.data;
                 const index = children.findIndex(d => d.id === data.id);
                 children.splice(index, 1);
             },
+            //获取角色组列表
+            async getRoleSetByCompanyIdFn(){
+                try{
+                    let data = {
+                        companyId:this.companyId
+                    }
+                    let res = await getRoleSetByCompanyId(data)
+                    console.log(res)
+                }catch(error){
+                    console.log(error)
+                }
+            },
+            //获取权限列表
+            async getResourceListFn(){
+                try{
+                    let data = {roleId:30}
+                    let res = await getResourceList(data)
+                    console.log(res)
+                    this.tableTreeData = res.data
+                }catch(error){
+                    console.log(error)
+                }
+            }
             // load(tree, treeNode, resolve) {
             //     console.log(tree)
             //     setTimeout(() => {
@@ -334,7 +411,8 @@
  <style lang="scss" scoped>
     @import '@/assets/css/public.scss';
     .PermissionsManagement{
-        height: calc(100% - 71px);
+        min-height: calc(100% - 71px);
+        overflow: auto;
         .icon-img{
             width: 30px;
             height: 30px;
@@ -346,10 +424,7 @@
             font-size: 14px;
             padding-right: 8px;
         }
-        /deep/.el-button--primary,
-        /deep/.el-button--danger{
-            padding: 5px 18px;
-        }
+       
         padding: 20px;
         @extend .justify-conten-between;
         .cont-left,.cont-right{
@@ -360,6 +435,7 @@
             width: 260px;
             padding: 20px;
             position: relative;
+             
             .cont1{
                 text-align: center;
                 height: 30px;
@@ -384,7 +460,12 @@
             }
         }
         .cont-right{
+            /deep/.el-button--primary,
+            /deep/.el-button--danger{
+                padding: 5px 18px;
+            }
             width: calc(100% - 310px);
+            
             .cont1{
                 line-height: 60px;
                 height: 60px;
@@ -411,6 +492,8 @@
                 @extend .dis-align-center;
                 margin-top: 40px;
             }
+            
+            
         }
     }
     

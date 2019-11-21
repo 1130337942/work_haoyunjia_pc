@@ -3,15 +3,16 @@
  */
 <template>
     <div class="addRole">
-        <el-dialog :title="formData.type == 1?'添加角色':'添加角色组'" 
-            :visible.sync="isRokeShow"
+        <el-dialog :title=" formData.type == 1? `${titleText}角色`:`${titleText}角色组`" 
+            :visible.sync="isShow"
             :before-close="closeFn"
             center>
             <el-form :model="formData" ref="formData">
                 <el-form-item label="类型" :label-width="formLabelWidth"
                 prop="type"
                 :rules=" [{ required: true, message: '请选择角色类型', trigger: ['blur','change'] }]">
-                    <el-select v-model="formData.type" placeholder="请选择角色类型">
+                    <el-select v-model="formData.type" placeholder="请选择角色类型"
+                    :disabled="!dialogData.isAddEdit">
                         <el-option label="角色" value="1"></el-option>
                         <el-option label="角色组" value="2"></el-option>
                     </el-select>
@@ -48,7 +49,9 @@
                     name: '',//名称 
                     roles:'',//角色组        
                 },
-                formLabelWidth: '120px'
+                formLabelWidth: '120px',
+                dialogData:{},//父组件传来的数据
+                titleText:'添加'
             }
         },
         watch:{
@@ -57,7 +60,10 @@
             },
         },
         props:{
-            isRokeShow:Boolean,
+            isShow:Boolean,
+        },
+        created(){
+            
         },
         methods:{
             //确定
@@ -77,6 +83,15 @@
             //取消
             closeFn(){
                 this.$emit('closeDialogAddRoleFn')
+            },
+            //父组组件点击事件 - 传参
+            addRoleDialogFn(data){
+                console.log(data)
+                console.log(this.$data)
+                this.dialogData = data
+                this.formData.tyep = data.isRole?'1':'2'
+                this.$set(this.formData,'type',data.isRole?'1':'2')
+                this.titleText = data.isAddEdit?'添加':'编辑'
             }
         }
     }

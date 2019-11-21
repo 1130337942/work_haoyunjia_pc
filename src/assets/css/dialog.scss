@@ -7,4 +7,11 @@
         width:176px;
         padding: 10px 20px;
     }
-} 
+}
+//width80%的对话框
+.width_80{
+    /deep/.el-dialog{
+        width: 80%;
+        min-width: 1210px;
+    }
+}

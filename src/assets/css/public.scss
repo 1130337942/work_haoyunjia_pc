@@ -42,6 +42,18 @@ img{
 .margin-top-10{
     margin-top: 10px
 }
+.margin-top-20{
+    margin-top: 20px
+}
+.margin-left-10{
+    margin-left: 10px
+}
+.margin-bottom-10{
+    margin-bottom: 10px;
+}
+.padding-20{
+    padding: 20px;
+}
 $cTheme:#44C9A8;
 .color-theme{
     color: $cTheme;
@@ -51,6 +63,12 @@ $cTheme:#44C9A8;
 }
 .color-B3B3B3{
     color:#B3B3B3;
+}
+//table的行高
+/deep/.el-table {
+    td{
+        padding: 10px 0px !important;
+    }
 }
 // 按钮but
 .el-button--warning{
