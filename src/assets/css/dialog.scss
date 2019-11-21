@@ -1,0 +1,10 @@
+// 对话框样式
+/deep/.el-dialog__header{
+    text-align: left;
+}
+.el-dialog__footer{
+    .el-button{
+        width:176px;
+        padding: 10px 20px;
+    }
+} 
