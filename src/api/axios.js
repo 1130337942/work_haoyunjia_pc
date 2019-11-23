@@ -35,6 +35,7 @@ service.interceptors.response.use(
     response => {
         const {data} = response;
         // console.log(data)
+        
         if (data.code * 1 === 0) {
             return data;
         }

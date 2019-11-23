@@ -64,12 +64,7 @@ $cTheme:#44C9A8;
 .color-B3B3B3{
     color:#B3B3B3;
 }
-//table的行高
-/deep/.el-table {
-    td{
-        padding: 10px 0px !important;
-    }
-}
+
 // 按钮but
 .el-button--warning{
     background-color:$cTheme;

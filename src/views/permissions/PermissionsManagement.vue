@@ -12,18 +12,20 @@
             <div class="cont1 fz-16">角色列表</div>
             <el-tree
                 class="filter-tree"
-                :data="data"
+                :data="roleData"
                 :props="defaultProps"
                 accordion
                 :expand-on-click-node="false"
                 :filter-node-method="filterNode"
                 ref="tree"
+                :node-key="`roleId${data.roleId}`"
+                @node-click="treeClickFn"
             >
                 <span class="custom-tree-node" slot-scope="{ node, data }">
                     <span>
-                        <img v-if="data.hierarchy == 1" class="icon-img"  :src="icon1" alt="">
-                        <img v-if="data.hierarchy == 2" class="icon-img"  :src="icon2" alt="">
-                        {{ node.label }}
+                        <img v-if="data.category == 1" class="icon-img"  :src="icon1" alt="">
+                        <img v-if="!data.category" class="icon-img"  :src="icon2" alt="">
+                        {{node.label}}
                     </span>
                     <span>
                         <el-button
@@ -31,7 +33,7 @@
                             size="mini"
                             class="color-FD6427"
                             @click="() => editRolesFn(data)"
-                            v-if="data.hierarchy == 1">
+                            v-if="data.category == 1">
                             修改
                         </el-button>
                     </span>
@@ -41,7 +43,7 @@
         </div>
         <div class="cont-right">
             <div class="cont1">
-                <span class="fz-18 font-bold">角色1</span>
+                <span class="fz-18 font-bold">{{roleItemData.name}}</span>
                 <div @click="editRole_Fn" class="color-FD6427 fz-14 edit-txt">修改</div>
             </div>
             <div class="cont2">
@@ -58,6 +60,7 @@
                         style="width: 100%"
                         row-key="id"
                         height="400"
+                        :row-style="{height:'45px'}"
                         :tree-props="{children: 'resources', hasChildren: 'hasChildren'}">
                     <el-table-column
                         prop="name"
@@ -68,26 +71,26 @@
                         label="WEB端是否授权"
                         align="center"
                         width="180">
-                        <template slot="header" slot-scope="scope">
-                            WEB端是否授权
+                        <!-- <template slot="header" slot-scope="scope">
                             <el-checkbox v-model="checked" ></el-checkbox>
-                        </template>
+                        </template> -->
                         <template slot-scope="scope">
                             <!-- {{scope.row.name}} -->
-                            <el-checkbox v-if="scope.row.status==1" v-model="checked"></el-checkbox>
+                            <!-- 1都有 2Web端有 3App有 -->
+                            <el-checkbox v-if="scope.row.pcOrApp==1 || scope.row.pcOrApp==2" v-model="scope.row.status"></el-checkbox>
                         </template>
                    
                     </el-table-column>
                     
                     <el-table-column
                         prop="address"
-                        align="center" >
-                        <template slot="header" slot-scope="scope">
-                            APP端是否授权
+                        align="center" 
+                        label="APP端是否授权">
+                        <!-- <template slot="header" slot-scope="scope">
                             <el-checkbox v-model="checked" ></el-checkbox>
-                        </template>
+                        </template> -->
                         <template slot-scope="scope">
-                            <el-checkbox v-if="scope.row.status==1"  v-model="checked"></el-checkbox>
+                            <el-checkbox v-if="scope.row.pcOrApp==1 || scope.row.pcOrApp==3"  v-model="scope.row.status"></el-checkbox>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -103,29 +106,32 @@
                 </div>
                 <el-table
                     ref="multipleTable"
-                    :data="tableData"
-                    tooltip-effect="dark"
-                    style="width: 100%"
-                    @selection-change="handleSelectionChange">
+                    :data="membersListData"
+                    style="width:100%"
+                    :row-style="{height:'45px'}"
+                > <!--@selection-change="handleSelectionChange"-->
                     <el-table-column
                     type="selection"
                     width="55">
-                    </el-table-column>
+                    </el-table-column> <!-- :prop="item.prop"-->
                     <el-table-column
-                    label="日期"
-                    width="120">
-                    <template slot-scope="scope">{{ scope.row.date }}</template>
+                        v-for="(item,i) in membersTableHeadData"
+                        :key="`index_${i}`"
+                        :prop="item.prop"
+                        :label="item.label"
+                        :width="item.width">
                     </el-table-column>
-                    <el-table-column
-                    prop="name"
-                    label="姓名"
-                    width="120">
+                     <el-table-column label='部门'
+                     width="160"><!--departmentDisposeFn(scope.row.departmentIdAndNameRes)-->
+                        <template  slot-scope="scope" >{{ scope.row.departmentText }}</template>
                     </el-table-column>
-                    <el-table-column
-                    prop="address"
-                    label="地址"
-                    show-overflow-tooltip>
+                    <el-table-column label='岗位'>
+                        <template  slot-scope="scope">{{ scope.row.positionName }}</template>
                     </el-table-column>
+                    <el-table-column label='在职状态'>
+                        <template  slot-scope="scope">{{ scope.row.workStatus==1?'在职':'离职' }}</template>
+                    </el-table-column>
+                    <!--show-overflow-tooltip-->
                 </el-table>
             </div>
         </div>
@@ -145,7 +151,11 @@
  <script>
     import addRoleEl from '@/components/mgDialog/addRole';
     import addMembersEl from '@/components/mgDialog/addMembers';
-    import { getRoleSetByCompanyId,getResourceList } from '@/api/mgModule/authorityApi';
+    import { 
+        getRoleSetByCompanyId,
+        getResourceList,
+        getRoleUserByCompanyId
+    } from '@/api/mgModule/authorityApi';
     import { getCompanyId } from '@/api/cookieStorage'
     let id = 1000;
     export default {
@@ -155,11 +165,33 @@
                 isRoleShow:false,//添加角色对话框是否显示
                 isMembersShow:false,//添加角色成员对话框显示
                 companyId:getCompanyId(),//公司id
+                roleData:[],//角色列表数据
                 tableTreeData:[],//权限列表数据
                 icon1:require('@/assets/img/management/Permissions_1.png'),
                 icon2:require('@/assets/img/management/Permissions_2.png'),
-                searchVal:'',
-                data: [{
+                searchVal:'',//角色列表搜索
+                membersTableHeadData:[ //成员列表header数据
+                    {
+                        label:'姓名',
+                        prop:'userName',
+                        width:'60'
+                    },
+                    {
+                        label:'手机号',
+                        prop:'mobile',
+                        width:'160'
+                    },
+                    {
+                        label:'工号',
+                        prop:'jobNumber',
+                        width:'60'
+                    },
+                ],
+                membersListData:[],//成员列表数据
+                roleId:'',//角色id
+                roleItemData:{},//当前点击的角色数据
+                data: [
+                    {
                     id: 1,
                     label: '角色组 1',
                     hierarchy:1,
@@ -175,37 +207,38 @@
                             label: '三级 1-1-2'
                         }]
                     }]
-                }, {
-                    id: 2,
-                    label: '角色组 2',
-                    hierarchy:1,
-                    children: [{
-                        hierarchy:2,
-                        id: 5,
-                        label: '二级 2-1'
                     }, {
-                        hierarchy:2,
-                        id: 6,
-                        label: '二级 2-2'
-                    }]
-                }, {
-                    id: 3,
-                    label: '角色组 3',
-                    hierarchy:1,
-                    children: [{
-                        hierarchy:2,
-                        id: 7,
-                        label: '二级 3-1'
+                        id: 2,
+                        label: '角色组 2',
+                        hierarchy:1,
+                        children: [{
+                            hierarchy:2,
+                            id: 5,
+                            label: '二级 2-1'
+                        }, {
+                            hierarchy:2,
+                            id: 6,
+                            label: '二级 2-2'
+                        }]
                     }, {
-                        hierarchy:2,
-                        id: 8,
-                        label: '二级 3-2'
-                    }]
-                }],
-                defaultProps: {
-                    children: 'children',
-                    label: 'label'
-                },
+                        id: 3,
+                        label: '角色组 3',
+                        hierarchy:1,
+                        children: [{
+                            hierarchy:2,
+                            id: 7,
+                            label: '二级 3-1'
+                        }, {
+                            hierarchy:2,
+                            id: 8,
+                            label: '二级 3-2'
+                        }]
+                    }
+                ],
+                defaultProps:{
+                    children: 'roles',
+                    label: 'name'
+                } ,
                 tableData1: [{
                     id: 1,
                     date: '2016-05-02',
@@ -293,9 +326,24 @@
         created(){
             //角色列表
             this.getRoleSetByCompanyIdFn();
-            this.getResourceListFn();
         },
         methods: {
+            //点击角色列表
+            treeClickFn(data,Node,el){
+                console.log(data)
+               
+                if(!data.category){
+                    this.roleItemData = {//当前角色数据
+                        name:data.name,
+                        roleSetId:data.id,//角色组id
+                    }
+                    this.roleId = data.roleId;//角色id
+                    //权限列表
+                    this.getResourceListFn();
+                    //成员列表
+                    this.getRoleUserByCompanyIdFn()
+                }
+            },
             //添加角色-显示对话框
             addRoleFn(){
                 this.isRoleShow = true
@@ -306,18 +354,19 @@
                 this.$refs.addRoleDialog.addRoleDialogFn(obj)
               
             },
-             //编辑角色组-显示弹框
+            //编辑角色组-显示弹框
             editRolesFn(data) {
                 // const newChild = { id: id++, label: 'testtest', children: [] };
                 // if (!data.children) {
                 // this.$set(data, 'children', []);
                 // }
                 // data.children.push(newChild);
-
+                console.log(data)
                 this.isRoleShow = true;
                 let obj = {
                     isAddEdit : false,//添加/编辑 --- true添加 false编辑
                     isRole : false,//角色/角色组--- true角色 fales角色组
+                    data,//编辑角色数据
                 }
                 this.$refs.addRoleDialog.addRoleDialogFn(obj)
             },
@@ -327,6 +376,7 @@
                 let obj = {
                     isAddEdit : false,//添加/编辑 --- true添加 false编辑
                     isRole : true,//角色/角色组--- true角色 fales角色组
+                    
                 }
                 this.$refs.addRoleDialog.addRoleDialogFn(obj)
             },
@@ -351,8 +401,10 @@
                  this.isMembersShow = false
             },
             filterNode(value, data) {
+                console.log(value)
+                console.log(data)
                 if (!value) return true;
-                return data.label.indexOf(value) !== -1;
+                return data.name.indexOf(value) !== -1;
             },
            
             remove(node, data) {
@@ -369,6 +421,7 @@
                     }
                     let res = await getRoleSetByCompanyId(data)
                     console.log(res)
+                    this.roleData = res.data
                 }catch(error){
                     console.log(error)
                 }
@@ -376,13 +429,37 @@
             //获取权限列表
             async getResourceListFn(){
                 try{
-                    let data = {roleId:30}
+                    let data = {roleId:this.roleId}
                     let res = await getResourceList(data)
                     console.log(res)
                     this.tableTreeData = res.data
                 }catch(error){
                     console.log(error)
                 }
+            },
+            //获取成员列表
+            async getRoleUserByCompanyIdFn(){
+                try{
+                    let data = {
+                        companyId:this.companyId,
+                        id:this.roleId
+                    }
+                    let res = await getRoleUserByCompanyId(data)
+                    res.data.map(item=>{
+                        item.departmentText = this.departmentDisposeFn(item.departmentIdAndNameRes)
+                    })
+                    this.membersListData = res.data
+                    // console.log(res)
+                }catch(error){
+                    console.log(error)
+                }
+            },
+            //部门数据处理
+            departmentDisposeFn(data){
+                let nameArr = data.map(item=>{
+                    return item.name
+                })
+                return nameArr.join('>')
             }
             // load(tree, treeNode, resolve) {
             //     console.log(tree)

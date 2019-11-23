@@ -23,12 +23,14 @@
                     <el-input v-model="formData.name" placeholder="请填写角色名字"></el-input>
                 </el-form-item>
                 <el-form-item label="所属角色组" :label-width="formLabelWidth"
-                prop="roles"
+                prop="roleSetId"
                 :rules=" [{ required: true, message: '请选择角所属角色组', trigger: ['blur','change'] }]"
-                v-show="formData.type == 1">
-                    <el-select v-model="formData.roles" placeholder="请选择角所属角色组">
-                        <el-option label="区域一" value="shanghai"></el-option>
-                        <el-option label="区域二" value="beijing"></el-option>
+                v-if="formData.type == 1">
+                    <el-select v-model="formData.roleSetId" placeholder="请选择角所属角色组">
+                        <el-option v-for="(item,i) in rolesData" 
+                        :key="i"
+                        :label="item.name" :value="item.id">
+                        </el-option>
                     </el-select>
                 </el-form-item>
             </el-form>
@@ -40,6 +42,8 @@
 </template>
 
 <script>
+    import {getRoleSetByCompanyId,addRole} from '@/api/mgModule/authorityApi';
+    import { getCompanyId } from '@/api/cookieStorage'
     export default {
         data(){
             return{
@@ -47,11 +51,14 @@
                 formData: {
                     type: '1',//类型
                     name: '',//名称 
-                    roles:'',//角色组        
+                    roleSetId:'',//角色组  
+                    companyId: getCompanyId()     
                 },
                 formLabelWidth: '120px',
                 dialogData:{},//父组件传来的数据
-                titleText:'添加'
+                titleText:'添加',
+                companyId:getCompanyId(),//公司id
+                rolesData:[],//角色组数据
             }
         },
         watch:{
@@ -68,17 +75,20 @@
         methods:{
             //确定
             confirmFn(formName){
-                console.log(formName)
                 this.$refs[formName].validate((valid) => {
-                    console.log(valid)
                     if (valid) {
-                        alert('submit!');
+                        //添加
+                        this.addRoleFn();
+                        
                     } else {
                         console.log('error submit!!');
                         return false;
                     }
+                    
                 });
-                this.$emit('confirmDialogAddRoleFn')
+                this.$emit('confirmDialogAddRoleFn');
+                //重置
+                // this.$refs[formName].resetFields();
             },
             //取消
             closeFn(){
@@ -89,9 +99,43 @@
                 console.log(data)
                 console.log(this.$data)
                 this.dialogData = data
-                this.formData.tyep = data.isRole?'1':'2'
-                this.$set(this.formData,'type',data.isRole?'1':'2')
+                this.$set(this.formData,'type',data.isRole?'1':'2');//1:角色 2：角色组
                 this.titleText = data.isAddEdit?'添加':'编辑'
+                if(data.isAddEdit){//添加
+                    this.getRoleSetByCompanyIdFn()
+                }else{
+                    this.$set(this.formData,'name',data.data.name)
+                }
+            },
+            //所属角色组列表
+            async getRoleSetByCompanyIdFn(){
+                try{
+                    let data = {
+                        companyId:this.companyId
+                    }
+                    let res = await getRoleSetByCompanyId(data)
+                    console.log(res)
+                    this.rolesData = res.data
+                }catch(error){
+                    console.log(error)
+                }
+            },
+            //添加角色/角色组
+            async addRoleFn(){
+                if(this.formData.type==2){
+                    delete this.formData.roleSetId
+                }
+                console.log(this.formData)
+                try{
+                    
+                    let res = await addRole(this.formData)
+                    Message({
+                        message: data.message,
+                        type: 'success'
+                    })
+                }catch(error){
+                    console.log(error)
+                }
             }
         }
     }

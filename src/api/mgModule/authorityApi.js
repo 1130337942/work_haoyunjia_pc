@@ -8,6 +8,11 @@ export function getRoleSetByCompanyId(data, params, header){
     let url = VUE_APP_basic+'/pcroleref/rest/getRoleSetByCompanyId'
     return api.post(url, params, header, data);
 }
+//获取角色下的人员名称(获取成员列表) 
+export function getRoleUserByCompanyId(data, params, header){
+    let url = VUE_APP_basic+'/pcroleref/rest/getRoleUserByCompanyId'
+    return api.post(url, params, header, data);
+}
 //权限列表
 export function getResourceList(data, params, header){
     let url = VUE_APP_basic+'/pcroleref/rest/getResourceList'
@@ -33,7 +38,12 @@ export function deleteById(data, params, header){
     let url = VUE_APP_basic+'/pcroleref/rest/deleteById'
     return api.post(url, params, header, data);
 }
-//角色下添加员工
+//角色下添加员工-所有成员列表数据-加搜索
+export function pcGetEmpAddRoleEmpByCompanyId(data, params, header){
+    let url = VUE_APP_basic+'/pccompany/rest/pcGetEmpAddRoleEmpByCompanyId'
+    return api.post(url, params, header, data);
+}
+//角色下添加员工-保存
 export function addRoleEmployee(data, params, header){
     let url = VUE_APP_basic+'/pcroleref/rest/addRoleEmployee'
     return api.post(url, params, header, data);
