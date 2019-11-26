@@ -789,7 +789,6 @@ export default {
                 })}
 				getTemplateUrl(param).then(result => {
 					if (result.code == '000000') {
-
 						let url = '/' + result.data.url.split('/').slice(3).join('/');	
 						//console.log(url);
 						//let urlHost = window.location.host;

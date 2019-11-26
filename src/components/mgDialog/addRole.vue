@@ -42,8 +42,8 @@
 </template>
 
 <script>
-    import {getRoleSetByCompanyId,addRole} from '@/api/mgModule/authorityApi';
-    import { getCompanyId } from '@/api/cookieStorage'
+    import {getRoleSetByCompanyId,addRole,updateRole} from '@/api/mgModule/authorityApi';
+    import { getCompanyId } from '@/api/cookieStorage';
     export default {
         data(){
             return{
@@ -77,16 +77,19 @@
             confirmFn(formName){
                 this.$refs[formName].validate((valid) => {
                     if (valid) {
-                        //添加
-                        this.addRoleFn();
-                        
+                        if(this.dialogData.isAddEdit){//添加
+                            this.addRoleFn();
+                        }else{ //编辑
+                            this.editRoleFn()
+                        }
                     } else {
                         console.log('error submit!!');
                         return false;
                     }
-                    
                 });
-                this.$emit('confirmDialogAddRoleFn');
+                setTimeout(()=>{
+                    this.$emit('confirmDialogAddRoleFn');
+                },500)
                 //重置
                 // this.$refs[formName].resetFields();
             },
@@ -97,14 +100,16 @@
             //父组组件点击事件 - 传参
             addRoleDialogFn(data){
                 console.log(data)
-                console.log(this.$data)
+                // console.log(this.$data)
                 this.dialogData = data
                 this.$set(this.formData,'type',data.isRole?'1':'2');//1:角色 2：角色组
-                this.titleText = data.isAddEdit?'添加':'编辑'
+                this.titleText = data.isAddEdit?'添加':'编辑';
+                this.getRoleSetByCompanyIdFn()
                 if(data.isAddEdit){//添加
-                    this.getRoleSetByCompanyIdFn()
-                }else{
-                    this.$set(this.formData,'name',data.data.name)
+                    
+                }else{//编辑
+                    this.$set(this.formData,'name',data.data.name);
+                    this.formData.roleSetId = data.data.roleSetId
                 }
             },
             //所属角色组列表
@@ -129,14 +134,34 @@
                 try{
                     
                     let res = await addRole(this.formData)
-                    Message({
-                        message: data.message,
+                    this.$message({
+                        message: res.message,
                         type: 'success'
                     })
                 }catch(error){
                     console.log(error)
                 }
-            }
+            },
+            //编辑角色/角色组
+            async editRoleFn(){
+                if(this.formData.type==2){//角色组
+                    delete this.formData.roleSetId
+                    this.formData.id = this.dialogData.data.id
+                }else{
+                    this.formData.id = this.dialogData.data.roleId
+                }
+                // console.log(this.formData)
+                try{
+                    let res = await updateRole(this.formData);
+                    this.$message({
+                        message: res.message,
+                        type: 'success'
+                    })
+                }catch(error){
+                    console.log(error)
+                }
+            },
+            
         }
     }
 </script>

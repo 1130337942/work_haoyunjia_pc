@@ -13,12 +13,14 @@
             <el-tree
                 class="filter-tree"
                 :data="roleData"
-                :props="defaultProps"
+                :props="{
+                    children: 'roles',
+                    label: 'name'
+                }"
                 accordion
                 :expand-on-click-node="false"
                 :filter-node-method="filterNode"
                 ref="tree"
-                :node-key="`roleId${data.roleId}`"
                 @node-click="treeClickFn"
             >
                 <span class="custom-tree-node" slot-scope="{ node, data }">
@@ -44,7 +46,7 @@
         <div class="cont-right">
             <div class="cont1">
                 <span class="fz-18 font-bold">{{roleItemData.name}}</span>
-                <div @click="editRole_Fn" class="color-FD6427 fz-14 edit-txt">修改</div>
+                <div v-show="roleItemData.name" @click="editRole_Fn" class="color-FD6427 fz-14 edit-txt">修改</div>
             </div>
             <div class="cont2">
                 <div class="div-c2-1">
@@ -53,7 +55,7 @@
                         <span class="fz-14">权限列表</span>
                         <span class="fz-12 color-B3B3B3 span2">已选择3个功能，6个权限</span>
                    </div>
-                   <el-button type="primary">保存</el-button>
+                   <el-button @click="searveFn" type="primary">保存</el-button>
                 </div><!-- :load="load" lazy border--->
                 <el-table 
                         :data="tableTreeData"
@@ -61,6 +63,7 @@
                         row-key="id"
                         height="400"
                         :row-style="{height:'45px'}"
+                        :header-cell-style="{height:'45px'}"
                         :tree-props="{children: 'resources', hasChildren: 'hasChildren'}">
                     <el-table-column
                         prop="name"
@@ -76,8 +79,8 @@
                         </template> -->
                         <template slot-scope="scope">
                             <!-- {{scope.row.name}} -->
-                            <!-- 1都有 2Web端有 3App有 -->
-                            <el-checkbox v-if="scope.row.pcOrApp==1 || scope.row.pcOrApp==2" v-model="scope.row.status"></el-checkbox>
+                            <!-- 1都有权限 2Web端有权限 3App有权限 -->
+                            <el-checkbox @change="itemWEBTrue(scope.row)"  v-if="scope.row.pcOrApp==1 || scope.row.pcOrApp==2" v-model="scope.row.pcChecked"></el-checkbox>
                         </template>
                    
                     </el-table-column>
@@ -90,7 +93,7 @@
                             <el-checkbox v-model="checked" ></el-checkbox>
                         </template> -->
                         <template slot-scope="scope">
-                            <el-checkbox v-if="scope.row.pcOrApp==1 || scope.row.pcOrApp==3"  v-model="scope.row.status"></el-checkbox>
+                            <el-checkbox @change="itemAPPTrue(scope.row)" v-if="scope.row.pcOrApp==1 || scope.row.pcOrApp==3"  v-model="scope.row.appChecked"></el-checkbox>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -101,28 +104,21 @@
                     </div>
                     <div>
                         <el-button @click="addMembersFn" type="primary">添加</el-button>
-                        <el-button type="danger">移除</el-button>
+                        <el-button @click="delMembersFn" type="danger">移除</el-button>
                     </div>
                 </div>
                 <el-table
-                    ref="multipleTable"
-                    :data="membersListData"
-                    style="width:100%"
-                    :row-style="{height:'45px'}"
-                > <!--@selection-change="handleSelectionChange"-->
-                    <el-table-column
-                    type="selection"
-                    width="55">
-                    </el-table-column> <!-- :prop="item.prop"-->
-                    <el-table-column
-                        v-for="(item,i) in membersTableHeadData"
-                        :key="`index_${i}`"
-                        :prop="item.prop"
-                        :label="item.label"
-                        :width="item.width">
-                    </el-table-column>
-                     <el-table-column label='部门'
-                     width="160"><!--departmentDisposeFn(scope.row.departmentIdAndNameRes)-->
+                ref="multipleTable"
+                :data="membersListData"
+                style="width:100%"
+                :row-style="{height:'45px'}"
+                :header-cell-style="{height:'45px'}"
+                @selection-change="membersListTrueFn"> 
+                    <el-table-column type="selection" width="55"></el-table-column>
+                    <el-table-column prop="userName" label="姓名" width="120"></el-table-column>
+                    <el-table-column prop="mobile" label="手机号" width="160"></el-table-column>
+                    <el-table-column prop="jobNumber" label="工号" width="80"></el-table-column>
+                    <el-table-column label='部门' width="160">
                         <template  slot-scope="scope" >{{ scope.row.departmentText }}</template>
                     </el-table-column>
                     <el-table-column label='岗位'>
@@ -143,7 +139,8 @@
         <add-members-el 
         :isMembersShow='isMembersShow'
         @confirmDialogMembersFn='confirmDialogMembersFn'
-        @closeDialogMembersFn='closeDialogMembersFn'>
+        @closeDialogMembersFn='closeDialogMembersFn'
+        ref="membersDialog">
         </add-members-el>
      </div>
  </template>
@@ -154,12 +151,14 @@
     import { 
         getRoleSetByCompanyId,
         getResourceList,
-        getRoleUserByCompanyId
+        getRoleUserByCompanyId,
+        deleteRoleEmployee,
+        updateResource
     } from '@/api/mgModule/authorityApi';
-    import { getCompanyId } from '@/api/cookieStorage'
+    import { getCompanyId } from '@/api/cookieStorage';
+    import {departmentDisposeFn} from '@/assets/js/common'
     let id = 1000;
     export default {
-        
         data(){
             return{
                 isRoleShow:false,//添加角色对话框是否显示
@@ -170,148 +169,11 @@
                 icon1:require('@/assets/img/management/Permissions_1.png'),
                 icon2:require('@/assets/img/management/Permissions_2.png'),
                 searchVal:'',//角色列表搜索
-                membersTableHeadData:[ //成员列表header数据
-                    {
-                        label:'姓名',
-                        prop:'userName',
-                        width:'60'
-                    },
-                    {
-                        label:'手机号',
-                        prop:'mobile',
-                        width:'160'
-                    },
-                    {
-                        label:'工号',
-                        prop:'jobNumber',
-                        width:'60'
-                    },
-                ],
                 membersListData:[],//成员列表数据
                 roleId:'',//角色id
                 roleItemData:{},//当前点击的角色数据
-                data: [
-                    {
-                    id: 1,
-                    label: '角色组 1',
-                    hierarchy:1,
-                    children: [{
-                        hierarchy:2,
-                        id: 4,
-                        label: '二级 1-1',
-                        children: [{
-                            id: 9,
-                            label: '三级 1-1-1'
-                        }, {
-                            id: 10,
-                            label: '三级 1-1-2'
-                        }]
-                    }]
-                    }, {
-                        id: 2,
-                        label: '角色组 2',
-                        hierarchy:1,
-                        children: [{
-                            hierarchy:2,
-                            id: 5,
-                            label: '二级 2-1'
-                        }, {
-                            hierarchy:2,
-                            id: 6,
-                            label: '二级 2-2'
-                        }]
-                    }, {
-                        id: 3,
-                        label: '角色组 3',
-                        hierarchy:1,
-                        children: [{
-                            hierarchy:2,
-                            id: 7,
-                            label: '二级 3-1'
-                        }, {
-                            hierarchy:2,
-                            id: 8,
-                            label: '二级 3-2'
-                        }]
-                    }
-                ],
-                defaultProps:{
-                    children: 'roles',
-                    label: 'name'
-                } ,
-                tableData1: [{
-                    id: 1,
-                    date: '2016-05-02',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1518 弄',
-                }, {
-                    id: 2,
-                    date: '2016-05-04',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1517 弄'
-                }, {
-                    id: 3,
-                    date: '2016-05-01',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1519 弄',
-                    children: [{
-                        id: 31,
-                        date: '2016-05-01',
-                        name: '王小虎',
-                        address: '上海市普陀区金沙江路 1519 弄',
-                        children: [{
-                            id: 33,
-                            date: '2016-05-01',
-                            name: '王小虎',
-                            address: '上海市普陀区金沙江路 1519 弄'
-                        }, {
-                            id: 34,
-                            date: '2016-05-01',
-                            name: '王小虎',
-                            address: '上海市普陀区金沙江路 1519 弄'
-                        }]
-                    }, {
-                        id: 32,
-                        date: '2016-05-01',
-                        name: '王小虎',
-                        address: '上海市普陀区金沙江路 1519 弄'
-                    }]
-                }, {
-                    id: 4,
-                    date: '2016-05-03',
-                    name: '王小虎',
-                    address: '上海市普陀区金沙江路 1516 弄'
-                }],
-                tableData: [{
-                date: '2016-05-03',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                date: '2016-05-02',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                date: '2016-05-04',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                date: '2016-05-01',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                date: '2016-05-08',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                date: '2016-05-06',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1518 弄'
-                }, {
-                date: '2016-05-07',
-                name: '王小虎',
-                address: '上海市普陀区金沙江路 1518 弄'
-                }],
-                multipleSelection: []
+                membersListTrueData: [],//选择成员列表true
+                serveTrueData:[] //保存 权限  true  的数据
             }
         },
         components:{
@@ -329,15 +191,15 @@
         },
         methods: {
             //点击角色列表
-            treeClickFn(data,Node,el){
-                console.log(data)
-               
-                if(!data.category){
+            treeClickFn(roleData,Node,el){
+                console.log(roleData)
+                if(!roleData.category){
                     this.roleItemData = {//当前角色数据
-                        name:data.name,
-                        roleSetId:data.id,//角色组id
+                        name:roleData.name,
+                        roleSetId:roleData.id,//角色组id
+                        roleId:roleData.roleId,//角色id
                     }
-                    this.roleId = data.roleId;//角色id
+                    this.roleId = roleData.roleId;//角色id
                     //权限列表
                     this.getResourceListFn();
                     //成员列表
@@ -376,13 +238,14 @@
                 let obj = {
                     isAddEdit : false,//添加/编辑 --- true添加 false编辑
                     isRole : true,//角色/角色组--- true角色 fales角色组
-                    
+                    data:this.roleItemData
                 }
                 this.$refs.addRoleDialog.addRoleDialogFn(obj)
             },
             //接收子组件事件-添加角色-确定事件
             confirmDialogAddRoleFn(){
-                this.isRoleShow = false
+                this.isRoleShow = false;
+                this.getRoleSetByCompanyIdFn()
             },
             //接收子组件事件-添加角色-取消事件
             closeDialogAddRoleFn(){
@@ -390,28 +253,52 @@
             },
             //添加成员-显示对话框
             addMembersFn(){
-                this.isMembersShow = true
+                this.isMembersShow = true;
+                let obj = {
+                    roleId:this.roleId
+                }
+                this.$refs.membersDialog.membersDialogFn(obj)
+            },
+            //删除成员列表
+            async delMembersFn(){
+                if(this.membersListTrueData.length==0) return 
+                try{
+                    let data = {
+                        ids:this.getIdsFn(),
+                        roleId:this.roleId
+                    }
+                    let res = await deleteRoleEmployee(data)
+                    this.$message({
+                        message: res.message,
+                        type: 'success',
+                        duration:2000
+                    });
+                    setTimeout(()=>{
+                        this.getRoleUserByCompanyIdFn()
+                    },1000)
+                }catch(error){
+                    console.log(error)
+                }
             },
             //接收子组件事件-添加角色成员-成功事件
             confirmDialogMembersFn(){
-                this.isMembersShow = false
+                this.isMembersShow = false;
+                this.getRoleUserByCompanyIdFn()
             },
             //接收子组件事件-添加角色成员-取消事件
             closeDialogMembersFn(){
                  this.isMembersShow = false
             },
+            //过滤角色列表
             filterNode(value, data) {
                 console.log(value)
                 console.log(data)
                 if (!value) return true;
                 return data.name.indexOf(value) !== -1;
             },
-           
-            remove(node, data) {
-                const parent = node.parent;
-                const children = parent.data.children || parent.data;
-                const index = children.findIndex(d => d.id === data.id);
-                children.splice(index, 1);
+            //成员列表true
+            membersListTrueFn(val){
+                this.membersListTrueData = val;
             },
             //获取角色组列表
             async getRoleSetByCompanyIdFn(){
@@ -446,7 +333,7 @@
                     }
                     let res = await getRoleUserByCompanyId(data)
                     res.data.map(item=>{
-                        item.departmentText = this.departmentDisposeFn(item.departmentIdAndNameRes)
+                        item.departmentText = departmentDisposeFn(item.departmentIdAndNameRes)
                     })
                     this.membersListData = res.data
                     // console.log(res)
@@ -454,34 +341,134 @@
                     console.log(error)
                 }
             },
-            //部门数据处理
-            departmentDisposeFn(data){
-                let nameArr = data.map(item=>{
-                    return item.name
+            //获取成员列表选中的成员id
+            getIdsFn(){
+                return  this.membersListTrueData.map(item=>{
+                    return item.userId
                 })
-                return nameArr.join('>')
-            }
-            // load(tree, treeNode, resolve) {
-            //     console.log(tree)
-            //     setTimeout(() => {
-            //         resolve([
-            //             {
-            //             id: 31,
-            //             date: '2016-05-01',
-            //             name: '王小虎',
-            //             address: '上海市普陀区金沙江路 1519 弄',
-            //              hasChildren: true,
-                       
-            //             }, {
-            //             id: 32,
-            //             date: '2016-05-01',
-            //             name: '王小虎',
-            //             address: '上海市普陀区金沙江路 1519 弄'
-            //             }
-            //         ])
-            //     }, 1000)
-            // }
+            },
+            //权限列表 web true的选项
+            itemWEBTrue(data){
+                // console.log(data)
+                this.checkedFn(data,'itemWEBTrue','pcChecked')
+            },
+            //权限列表 app true的选项
+            itemAPPTrue(data){
+                this.checkedFn(data,'itemAPPTrue','appChecked')
+            },
+            //check公用方法
+            checkedFn(data,fnNmame,check){
+                data.resources.map(item=>{
+                    item[check] = data[check];
+                    // if(item.pcChecked && item.appChecked){//web和app都有权限
+                    //     item.pcOrAppRole = 1
+                    // }else if(item.pcChecked && !item.appChecked){ //pc有权限
+                    //     item.pcOrAppRole = 2
+                    // }else if(!item.pcChecked && item.appChecked){ //app有权限
+                    //     item.pcOrAppRole = 3
+                    // }else if(!item.pcChecked && !item.appChecked){//都没有权限
+                    //     item.pcOrAppRole = null
+                    // }
+                    // console.log(item)
+                    if(item.resources.length>0){
+                        this[fnNmame](item)
+                    }
+                    
+                })
+                
+            },
+            searveFn(){
+                // let codeArr = 
+               
+                this.aaa()
+                this.getFn(this.tableTreeData)
+                console.log(this.serveTrueData)
+                let codeArr = this.serveTrueData.map(item=>{
+                    return item.code
+                })
+                let pcOrAppRoleArr = this.serveTrueData.map(item=>{
+                    return item.pcOrAppRole
+                })
+                let code = codeArr.join();
+                let pcOrAppRole = pcOrAppRoleArr.join();
+                console.log(code)
+                let data ={
+                    code,
+                    pcOrAppRole,
+                    roleId:this.roleId
+                }
+                updateResource(data).then(res=>{
+                    console.log(res)
+                })
+            },
+            aaa(){
+                this.tableTreeData.map(item=>{
+                    this.ifFn(item)
+                    if(item.resources.length>0){
+                        this.itemFn(item.resources)
+                    }
+                });
+                console.log( this.tableTreeData)
+            },
+            itemFn(data){
+                data.map(item=>{
+                    this.ifFn(item)
+                    if(item.resources.length>0){
+                        this.itemFn(item.resources)
+                    }
+               
+                });
+            },
+            ifFn(item){
+                if(item.pcChecked && item.appChecked){//web和app都有权限
+                    item.pcOrAppRole = 1
+                }else if(item.pcChecked && !item.appChecked){ //pc有权限
+                    item.pcOrAppRole = 2
+                }else if(!item.pcChecked && item.appChecked){ //app有权限
+                    item.pcOrAppRole = 3
+                }else if(!item.pcChecked && !item.appChecked){//都没有权限
+                    item.pcOrAppRole = null
+                }
+            },
+            getFn(data){
+                // let arr = this.tableTreeData.map(item=>{
+                //     if(item.pcChecked || item.appChecked){
+                //         return item
+                //     }
+                //     if(item.resources.length>0){
+                //        this.bbb(item.resources)
+                //     }
+                // });
+                data.forEach(item=>{
+                    if(item.pcChecked || item.appChecked){
+                        this.serveTrueData.push(item)
+                    }
+                    if(item.resources.length>0){
+                       this.getFn(item.resources)
+                    }
+                })
+                // let Arr = this.tableTreeData.map(item=>{
+                //     if(item.pcChecked || item.appChecked){
+                //         if(item.pcOrAppRole){
+                //             return item.pcOrAppRole
+                //         }
+                //     }
+                // })
+                // console.log(arr)
+               
+            },
+            bbb(data){
+                data.forEach(item=>{
+                    if(item.pcChecked || item.appChecked){
+                        this.serveTrueData.push(item)
+                    }
+                    if(item.resources.length>0){
+                       this.bbb(item.resources)
+                    }
+                })
+            },
         },
+        
     }
  </script>
  
