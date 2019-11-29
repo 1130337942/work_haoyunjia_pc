@@ -22,8 +22,8 @@ export default {
     data(){
         return{
             routTabArr: sessionStorage.tabArr?JSON.parse(sessionStorage.tabArr):[{
-                path:'/MgHome',
-                name:'首页'
+                path:this.$route.path,
+                name:this.$route.meta.name
             }],
             getTab:[],
             isObj:{},
@@ -36,13 +36,20 @@ export default {
         }
     },
     created(){
-        // console.log(this.tabArr)
+        console.log(this.$route.path)
         this.getRouteFn()
     },
-    
+    computed:{
+        //管理控制台模块 还是 业务工作台模块
+        moduleType(){
+            if(this.$route.path == '/mgHome'){
+                
+            }
+        }
+    },
     methods: {
         getRouteFn(){
-            // console.log(this.$route)
+            console.log(this.$route)
            
             let thisRoute = this.$route;
             let thisRouteName = thisRoute.meta.name;

@@ -21,6 +21,10 @@
                 :expand-on-click-node="false"
                 :filter-node-method="filterNode"
                 ref="tree"
+                node-key="name"
+                :default-expanded-keys="treeKey1"
+                :current-node-key="checkedKey1"
+                :highlight-current='true'
                 @node-click="treeClickFn"
             >
                 <span class="custom-tree-node" slot-scope="{ node, data }">
@@ -53,11 +57,12 @@
                    <div>
                         <img class="icon-img" src="@/assets/img/management/Permissions_3.png" alt="">
                         <span class="fz-14">权限列表</span>
-                        <span class="fz-12 color-B3B3B3 span2">已选择3个功能，6个权限</span>
+                        <!-- <span class="fz-12 color-B3B3B3 span2">已选择3个功能，6个权限</span> -->
                    </div>
-                   <el-button @click="searveFn" type="primary">保存</el-button>
+                   <el-button v-show="tableTreeData.length>0" @click="searveFn" type="primary">保存</el-button>
                 </div><!-- :load="load" lazy border--->
                 <el-table 
+                        v-loading="tableTreeLoading"
                         :data="tableTreeData"
                         style="width: 100%"
                         row-key="id"
@@ -102,23 +107,24 @@
                         <img class="icon-img" src="@/assets/img/management/Permissions_4.png" alt="">
                         成员列表
                     </div>
-                    <div>
+                    <div v-show="roleItemData.name">
                         <el-button @click="addMembersFn" type="primary">添加</el-button>
                         <el-button @click="delMembersFn" type="danger">移除</el-button>
                     </div>
                 </div>
                 <el-table
+                v-loading="tableLoading"
                 ref="multipleTable"
                 :data="membersListData"
                 style="width:100%"
                 :row-style="{height:'45px'}"
                 :header-cell-style="{height:'45px'}"
                 @selection-change="membersListTrueFn"> 
-                    <el-table-column type="selection" width="55"></el-table-column>
-                    <el-table-column prop="userName" label="姓名" width="120"></el-table-column>
-                    <el-table-column prop="mobile" label="手机号" width="160"></el-table-column>
-                    <el-table-column prop="jobNumber" label="工号" width="80"></el-table-column>
-                    <el-table-column label='部门' width="160">
+                    <el-table-column type="selection" ></el-table-column>
+                    <el-table-column prop="userName" label="姓名"></el-table-column>
+                    <el-table-column prop="mobile" label="手机号" ></el-table-column>
+                    <el-table-column prop="jobNumber" label="工号" ></el-table-column>
+                    <el-table-column label='部门' >
                         <template  slot-scope="scope" >{{ scope.row.departmentText }}</template>
                     </el-table-column>
                     <el-table-column label='岗位'>
@@ -153,17 +159,20 @@
         getResourceList,
         getRoleUserByCompanyId,
         deleteRoleEmployee,
-        updateResource
+        updateResource,
+        ifUserIsRole
     } from '@/api/mgModule/authorityApi';
-    import { getCompanyId } from '@/api/cookieStorage';
+    import { getCompanyId , getUserId} from '@/api/cookieStorage';
     import {departmentDisposeFn} from '@/assets/js/common'
-    let id = 1000;
     export default {
         data(){
             return{
+                companyId:getCompanyId(),//公司id
+                userId:getUserId(),//用户id
+                tableTreeLoading: true,//权限列表加载Loading
+                tableLoading:true,//成员列表加载Loading
                 isRoleShow:false,//添加角色对话框是否显示
                 isMembersShow:false,//添加角色成员对话框显示
-                companyId:getCompanyId(),//公司id
                 roleData:[],//角色列表数据
                 tableTreeData:[],//权限列表数据
                 icon1:require('@/assets/img/management/Permissions_1.png'),
@@ -173,7 +182,9 @@
                 roleId:'',//角色id
                 roleItemData:{},//当前点击的角色数据
                 membersListTrueData: [],//选择成员列表true
-                serveTrueData:[] //保存 权限  true  的数据
+                serveTrueData:[], //保存 权限  true  的数据
+                treeKey1:[],//树形结构默认展开第一个
+                checkedKey1:'',//默认选中第一个
             }
         },
         components:{
@@ -188,8 +199,21 @@
         created(){
             //角色列表
             this.getRoleSetByCompanyIdFn();
+            this.ifUserIsRoleFn()
         },
         methods: {
+            ifUserIsRoleFn(){
+                let data = {
+                    userId:this.userId,
+                    code:"4=1=1_1",
+                    companyId:this.companyId
+                };
+                ifUserIsRole(data).then(res=>{
+                    console.log(res)
+                }).catch(error=>{
+                    console.log(error)
+                })
+            },
             //点击角色列表
             treeClickFn(roleData,Node,el){
                 console.log(roleData)
@@ -200,6 +224,8 @@
                         roleId:roleData.roleId,//角色id
                     }
                     this.roleId = roleData.roleId;//角色id
+                    this.tableTreeLoading = true;
+                    this.tableLoading = true
                     //权限列表
                     this.getResourceListFn();
                     //成员列表
@@ -223,7 +249,7 @@
                 // this.$set(data, 'children', []);
                 // }
                 // data.children.push(newChild);
-                console.log(data)
+                // console.log(data)
                 this.isRoleShow = true;
                 let obj = {
                     isAddEdit : false,//添加/编辑 --- true添加 false编辑
@@ -273,6 +299,7 @@
                         type: 'success',
                         duration:2000
                     });
+                    this.tableLoading = true
                     setTimeout(()=>{
                         this.getRoleUserByCompanyIdFn()
                     },1000)
@@ -291,8 +318,8 @@
             },
             //过滤角色列表
             filterNode(value, data) {
-                console.log(value)
-                console.log(data)
+                // console.log(value)
+                // console.log(data)
                 if (!value) return true;
                 return data.name.indexOf(value) !== -1;
             },
@@ -307,8 +334,34 @@
                         companyId:this.companyId
                     }
                     let res = await getRoleSetByCompanyId(data)
-                    console.log(res)
-                    this.roleData = res.data
+                    // console.log(res)
+                    this.roleData = res.data;
+                    //默认展开第一个和选中第一个
+                    this.treeKey1.push(this.roleData[0].name);
+                    
+                    this.$nextTick(function(){
+                        //setCurrentKey element方法
+                        this.$refs.tree.setCurrentKey(this.checkedKey1); 
+                    });
+                    //有角色
+                    if(res.data[0].roles.length == 0 || !res.data[0].roles){
+                        this.tableTreeLoading = false;
+                        this.tableLoading = false
+                    }
+                    if(!res.data[0].roles.length>0 || !res.data[0].roles)return false
+                    this.checkedKey1 = this.roleData[0].roles[0].name
+                    let data0 = res.data[0].roles[0]
+                    this.roleItemData = {//当前角色数据
+                        name:data0.name,
+                        roleSetId:data0.id,//角色组id
+                        roleId:data0.roleId,//角色id
+                    }
+                    this.roleId = data0.roleId
+                    //权限列表
+                    this.getResourceListFn();
+                    //成员列表
+                    this.getRoleUserByCompanyIdFn()
+                   
                 }catch(error){
                     console.log(error)
                 }
@@ -317,9 +370,11 @@
             async getResourceListFn(){
                 try{
                     let data = {roleId:this.roleId}
-                    let res = await getResourceList(data)
-                    console.log(res)
-                    this.tableTreeData = res.data
+                    let res = await getResourceList(data);
+                    this.tableTreeLoading = false
+                    // console.log(res)
+                    this.tableTreeData = res.data;
+
                 }catch(error){
                     console.log(error)
                 }
@@ -331,7 +386,8 @@
                         companyId:this.companyId,
                         id:this.roleId
                     }
-                    let res = await getRoleUserByCompanyId(data)
+                    let res = await getRoleUserByCompanyId(data);
+                    this.tableLoading = false
                     res.data.map(item=>{
                         item.departmentText = departmentDisposeFn(item.departmentIdAndNameRes)
                     })
@@ -360,15 +416,7 @@
             checkedFn(data,fnNmame,check){
                 data.resources.map(item=>{
                     item[check] = data[check];
-                    // if(item.pcChecked && item.appChecked){//web和app都有权限
-                    //     item.pcOrAppRole = 1
-                    // }else if(item.pcChecked && !item.appChecked){ //pc有权限
-                    //     item.pcOrAppRole = 2
-                    // }else if(!item.pcChecked && item.appChecked){ //app有权限
-                    //     item.pcOrAppRole = 3
-                    // }else if(!item.pcChecked && !item.appChecked){//都没有权限
-                    //     item.pcOrAppRole = null
-                    // }
+                 
                     // console.log(item)
                     if(item.resources.length>0){
                         this[fnNmame](item)
@@ -378,12 +426,17 @@
                 
             },
             searveFn(){
-                // let codeArr = 
-               
-                this.aaa()
+                this.serveTrueData = [];//已选的数据列表为空
+                //修改setPcOrAppRole值
+                this.setPcOrAppRoleFn(this.tableTreeData)
                 this.getFn(this.tableTreeData)
                 console.log(this.serveTrueData)
-                let codeArr = this.serveTrueData.map(item=>{
+                //权限保存post请求
+                this.permissionsSaveFn()
+            },
+             //权限保存post请求
+            async permissionsSaveFn(){
+                 let codeArr = this.serveTrueData.map(item=>{
                     return item.code
                 })
                 let pcOrAppRoleArr = this.serveTrueData.map(item=>{
@@ -391,24 +444,38 @@
                 })
                 let code = codeArr.join();
                 let pcOrAppRole = pcOrAppRoleArr.join();
-                console.log(code)
                 let data ={
                     code,
                     pcOrAppRole,
                     roleId:this.roleId
                 }
-                updateResource(data).then(res=>{
-                    console.log(res)
-                })
+                console.log(data)
+                try{
+                    let res = await updateResource(data)
+                    this.$message({
+                        message: res.message,
+                        type: 'success',
+                        duration:2000
+                    });
+                    this.tableTreeLoading = true
+                    setTimeout(()=>{
+                        //权限列表
+                        this.getResourceListFn()
+                    },2000)
+                }catch(error){
+                    console.log(error)
+                }
             },
-            aaa(){
+            //修改setPcOrAppRole值
+            setPcOrAppRoleFn(data){
                 this.tableTreeData.map(item=>{
                     this.ifFn(item)
                     if(item.resources.length>0){
                         this.itemFn(item.resources)
                     }
                 });
-                console.log( this.tableTreeData)
+                
+                // console.log( this.tableTreeData)
             },
             itemFn(data){
                 data.map(item=>{
@@ -420,6 +487,7 @@
                 });
             },
             ifFn(item){
+                // console.log(item)
                 if(item.pcChecked && item.appChecked){//web和app都有权限
                     item.pcOrAppRole = 1
                 }else if(item.pcChecked && !item.appChecked){ //pc有权限
@@ -429,16 +497,9 @@
                 }else if(!item.pcChecked && !item.appChecked){//都没有权限
                     item.pcOrAppRole = null
                 }
+                // return item
             },
             getFn(data){
-                // let arr = this.tableTreeData.map(item=>{
-                //     if(item.pcChecked || item.appChecked){
-                //         return item
-                //     }
-                //     if(item.resources.length>0){
-                //        this.bbb(item.resources)
-                //     }
-                // });
                 data.forEach(item=>{
                     if(item.pcChecked || item.appChecked){
                         this.serveTrueData.push(item)
@@ -447,26 +508,8 @@
                        this.getFn(item.resources)
                     }
                 })
-                // let Arr = this.tableTreeData.map(item=>{
-                //     if(item.pcChecked || item.appChecked){
-                //         if(item.pcOrAppRole){
-                //             return item.pcOrAppRole
-                //         }
-                //     }
-                // })
-                // console.log(arr)
-               
             },
-            bbb(data){
-                data.forEach(item=>{
-                    if(item.pcChecked || item.appChecked){
-                        this.serveTrueData.push(item)
-                    }
-                    if(item.resources.length>0){
-                       this.bbb(item.resources)
-                    }
-                })
-            },
+           
         },
         
     }

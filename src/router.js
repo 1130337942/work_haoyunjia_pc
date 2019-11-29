@@ -41,7 +41,8 @@ let routes = [
         {
             path: '/',
             name: 'myView',
-            component: ()=>import('./myView'),
+            component: ()=>import(/*webpackChunkName:'ImportHYJ'*/ '@/components/myView/myView'),
+          
             redirect:{name: 'index'},
             children: [
                 {
@@ -49,7 +50,9 @@ let routes = [
                     name: 'index',
                     component: () => import (/*webpackChunkName:'ImportHYJ'*/ '@/components/contents/index'),
                     meta: {
-                        keepAlive: false // 不需要缓存
+                        keepAlive: false, // 不需要缓存
+                        name: '首页'
+                      
                     }
                 },
                 {
@@ -57,7 +60,7 @@ let routes = [
                     name: 'AllBill',
                     component: () => import (/*webpackChunkName:'ImportHYJ'*/ '@/components/FlexibleBill/AllBill'),
                     meta: {
-                        keepAlive: false // 不需要缓存
+                        keepAlive: false, // 不需要缓存
                     }
                 },
                 {
@@ -65,7 +68,7 @@ let routes = [
                     name: 'ProductCenter',
                     component: () => import (/*webpackChunkName:'ImportHYJ'*/ '@/components/ProductCenter/ProductCenter'),
                     meta: {
-                        keepAlive: true // 需要缓存
+                        keepAlive: true, // 需要缓存
                     }
                 },
                 {
@@ -73,7 +76,8 @@ let routes = [
                     name: 'Partner',
                     component: () => import (/*webpackChunkName:'ImportHYJ'*/ '@/components/PartnerManagement/Partner'),
                     meta: {
-                        keepAlive: true // 需要缓存
+                        keepAlive: true, // 需要缓存
+                        name: '全部',
                     }
                 },
                 {
@@ -82,7 +86,8 @@ let routes = [
                     // component: () => import ('@/components/PartnerManagement/Client')
                     component:()=>import(/*webpackChunkName:'ImportHYJ'*/ '@/components/PartnerManagement/Client'),
                     meta: {
-                        keepAlive: true // 需要缓存
+                        keepAlive: true, // 需要缓存
+                        name: '客户',
                     }
                 },
                 {
@@ -90,7 +95,8 @@ let routes = [
                     name: 'LaborPool',
                     component: () => import (/*webpackChunkName:'ImportHYJ'*/ '@/components/PartnerManagement/LaborPool'),
                     meta: {
-                        keepAlive: true // 需要缓存
+                        keepAlive: true, // 需要缓存
+                        name: '用工池',
                     }
                 },
                 {
@@ -98,7 +104,8 @@ let routes = [
                     name: 'Rest',
                     component: () => import (/*webpackChunkName:'ImportHYJ'*/ '@/components/PartnerManagement/Rest'),
                     meta: {
-                        keepAlive: true // 需要缓存
+                        keepAlive: true, // 需要缓存
+                        name: '其他',
                     }
                 },
                 {
@@ -106,7 +113,8 @@ let routes = [
                     name: 'servicePeopleList',
                     component: () => import (/*webpackChunkName:'ImportHYJ'*/ '@/components/servicePeople/servicePeopleList'),
                     meta: {
-                        keepAlive: true // 需要缓存
+                        keepAlive: true, // 需要缓存
+                        name: '服务人员',
                     }
                 },
                 {
@@ -114,7 +122,8 @@ let routes = [
                     name: 'Bill',
                     component: () => import (/*webpackChunkName:'ImportHYJ'*/ '@/components/Bill/Bill'),
                     meta: {
-                        keepAlive: true // 需要缓存
+                        keepAlive: true, // 需要缓存
+                        name:'账单',
                     }
                 },
                 {
@@ -130,7 +139,8 @@ let routes = [
                     name: 'SupplierContract',
                     component: () => import (/*webpackChunkName:'ImportHYJ'*/ '@/components/Contract/SupplierContract'),
                     meta: {
-                        keepAlive: true // 需要缓存
+                        keepAlive: true, // 需要缓存
+                        name:'用工协议管理'
                     }
                 },
                 {
@@ -138,7 +148,8 @@ let routes = [
                     name: 'RequestMonitor',
                     component: () => import (/*webpackChunkName:'ImportHYJ'*/ '@/components/RequestManagement/RequestMonitor'),
                     meta: {
-                        keepAlive: true // 需要缓存
+                        keepAlive: true, // 需要缓存
+                        name:'请求监控',
                     }
                 }
             ]

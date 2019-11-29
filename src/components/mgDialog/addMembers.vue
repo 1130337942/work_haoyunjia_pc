@@ -28,11 +28,11 @@
                                 height="400"
                                 @selection-change="handleSelectionChange"
                             >
-                                <el-table-column type="selection" width="55"></el-table-column>
-                                <el-table-column prop="userName" label="姓名" width="120"></el-table-column>
-                                <el-table-column prop="mobile" label="手机号" width="160"></el-table-column>
-                                <el-table-column prop="jobNumber" label="工号" width="80"></el-table-column>
-                                <el-table-column label='部门' width="160">
+                                <el-table-column type="selection" ></el-table-column>
+                                <el-table-column prop="userName" label="姓名" ></el-table-column>
+                                <el-table-column prop="mobile" label="手机号" ></el-table-column>
+                                <el-table-column prop="jobNumber" label="工号" ></el-table-column>
+                                <el-table-column label='部门' >
                                     <template  slot-scope="scope" >{{ scope.row.departmentText }}</template>
                                 </el-table-column>
                                 <el-table-column label='岗位'>

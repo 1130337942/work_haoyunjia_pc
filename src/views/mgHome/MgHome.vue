@@ -61,7 +61,7 @@
                     <div>组织架构</div>
                   
                 </li>
-                <li class="">
+                <li  class="">
                     <img src="./../../assets/img/management/mghome_company3.png" alt="">
                     <div>岗位</div>
                 </li>
@@ -73,7 +73,7 @@
                     <img src="./../../assets/img/management/mghome_company5.png" alt="">
                     <div>企业设置</div>
                 </li>
-                <li class="">
+                <li @click="openPage('/PermissionsManagement')" class="">
                     <img src="./../../assets/img/management/mghome_company6.png" alt="">
                     <div>权限管理</div>
                 </li>

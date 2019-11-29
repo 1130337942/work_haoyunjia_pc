@@ -17,11 +17,6 @@
                         <el-option label="角色组" value="2"></el-option>
                     </el-select>
                 </el-form-item>
-                <el-form-item label="名称" :label-width="formLabelWidth"
-                prop="name"
-                :rules="{required: true, message: '请填写名字', trigger:['blur','change']}">
-                    <el-input v-model="formData.name" placeholder="请填写角色名字"></el-input>
-                </el-form-item>
                 <el-form-item label="所属角色组" :label-width="formLabelWidth"
                 prop="roleSetId"
                 :rules=" [{ required: true, message: '请选择角所属角色组', trigger: ['blur','change'] }]"
@@ -33,6 +28,12 @@
                         </el-option>
                     </el-select>
                 </el-form-item>
+                <el-form-item label="名称" :label-width="formLabelWidth"
+                prop="name"
+                :rules="{required: true, message: '请填写名字', trigger:['blur','change']}">
+                    <el-input v-model="formData.name" placeholder="请填写角色名字"></el-input>
+                </el-form-item>
+                
             </el-form>
             <div slot="footer" class="dialog-footer">
                 <el-button class="fz-18" type="primary" @click="confirmFn('formData')">确 定</el-button>

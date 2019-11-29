@@ -3,7 +3,6 @@
         <el-menu 
         class="el-menu-demo" 
         mode="vertical" 
-        @select="handleSelect" 
         :unique-opened='true'>
             <div v-for="(firstItem,firstIndex) in this.datalist" :key="'first'+firstIndex">
                   <!--el-submenu 为菜单列表，含有箭头，在children.length大于0的时候使用-->
@@ -41,199 +40,18 @@
     </div>
 </template>
 <script>
-    import { mapState, mapMutations, mapActions } from 'vuex';
     import { getPcMenusByOrgId } from '@/api/api';
+    import { getCompanyId } from '@/api/cookieStorage';
     export default {
         name: 'ProductCenter',
         data() {
             return {
+                companyId:getCompanyId(),
                 isCollapse: true,
-                mode: 'horizontal',
                 menuDoms: [],
                 datalist:[],
-                list2: [
-                    {
-                        path: "/index",
-                        name: "首页",
-                        icon: 'el-icon-s-home',
-                    },
-                    // {
-                    //     path: "/index110",
-                    //     name: "导航666",
-                    //     icon: 'el-icon-menu',
-                    //     show:'false',
-                    //     children: [
-                    //         {
-                    //             path: "/index110-1",
-                    //             name: "666-1",
-                    //             children: [
-                    //                 {
-                    //                     path: "/6-1",
-                    //                     name: "导航1-1",
-                    //                 },
-                    //                 {
-                    //                     path: "/6-2",
-                    //                     name: "导航1-2",
-                    //                 },
-                    //                 {
-                    //                     path: "/6-3",
-                    //                     name: "导航1-3",
-                    //                 }
-                    //             ]
-                    //         },
-                    //         {
-                    //             path: "/test",
-                    //             name: "测试",
-                    //         }
-                    //     ]
-                    // },
-                    {
-                        path: "/index1",
-                        name: "灵活用工",
-                        icon: 'el-icon-share',
-                         children: [
-                            // {
-                            //     path: "/index11",
-                            //     name: "导航a",
-                            //     children: [
-                            //         {
-                            //             path: "/2-1",
-                            //             name: "导航a-1",
-                            //         },
-                            //         {
-                            //             path: "/2-3",
-                            //             name: "导航a-2",
-                            //         },
-                            //         {
-                            //             path: "/2-4",
-                            //             name: "导航a-3",
-                            //         }
-                            //     ]
-                            // },
-                             {
-                                path: "/AllBill",
-                                name: "全部订单",
-                            }
-                        ]
-                    },
-                    //  {
-                    //     path: "/index2",
-                    //     name: "产品中心",
-                    //     icon: 'el-icon-s-cooperation',
-                    //      children: [
-                    //         {
-                    //             path: "/ProductCenter",
-                    //             name: "产品中心",
-                    //         }
-                    //     ]
-                    // },
-                    {
-                        path: "/index3",
-                        name: "合作关系管理",
-                        icon: 'el-icon-s-finance',
-                         children: [
-                            {
-                                path: "/Partner",
-                                name: "全部",
-                            },
-                            {
-                                path: "/Client",
-                                name: "客户",
-                            },
-                            {
-                                path: "/LaborPool",
-                                name: "用工池",
-                            },
-                            {
-                                path: "/Rest",
-                                name: "其他",
-                            }
-                        ]
-                    },
-                    {  
-                        path: "/index6",
-                        name: "服务人员管理",
-                        icon: 'el-icon-s-custom',
-                         children: [
-                            {
-                                path: "/servicePeopleList",
-                                name: "服务人员",
-                            }
-                        ]
-                    },
-                    {
-                        path: "/index4",
-                        name: "账单",
-                        icon: 'el-icon-s-data',
-                        hidden:true,
-                         children: [
-                            {
-                                path: "/Bill",
-                                name: "账单",
-                            }
-                        ]
-                    },
-                    {
-                        path: "/index5",
-                        name: "协议管理",
-                        icon: 'el-icon-menu',
-                         children: [
-                            {
-                                path: "/CustomerContract",
-                                name: "客户协议管理",
-                            },
-                            {
-                                path: "/SupplierContract",
-                                name: "用工协议管理",
-                            }
-                        ]
-                    },
-                    {
-                        path: "/index7",
-                        name: "请求管理",
-                        icon: 'el-icon-s-promotion',
-                         children: [
-                            {
-                                path: "/RequestMonitor",
-                                name: "请求监控",
-                            }
-                        ]
-                    }
-                ]
 
             }
-        },
-        methods: {
-            ...mapActions(['saveTags']),
-            handleOpen(key, keyPath) {
-              //  console.log(key, keyPath);
-            },
-            handleClose(key, keyPath) {
-              //  console.log(key, keyPath);
-            },
-            handleSelect() {
-
-            },
-            selectDoms(dom) {
-
-            },
-            // 点击左侧导航跳转右侧内容区域
-            goPath(path, name) {
-                this.$router.push(path);
-                this.saveTags({path, name});  
-            },
-            //菜单配置
-            getPcMenusByOrgId1(){
-                let param = {param:JSON.stringify({
-                    orgId:localStorage.getItem('host_id')
-                })}
-                getPcMenusByOrgId(param).then(result => {
-                   // console.log(result)
-                    this.datalist = result.data;
-                }).catch(error => {
-                    this.$router.push('/Login');
-                });
-            },
         },
         created(){
 			// let urlHost = window.location.host;
@@ -247,6 +65,28 @@
            this.getPcMenusByOrgId1();
             
         },
+        methods: {
+           
+           
+            // 点击左侧导航跳转右侧内容区域
+            goPath(path, name) {
+                this.$router.push(path);
+            },
+            //菜单配置
+            getPcMenusByOrgId1(){
+                let param = {param:JSON.stringify({
+                    orgId:localStorage.getItem('host_id'),
+                    companyId:this.companyId
+                })}
+                getPcMenusByOrgId(param).then(result => {
+                   // console.log(result)
+                    this.datalist = result.data;
+                }).catch(error => {
+                    this.$router.push('/Login');
+                });
+            },
+        },
+       
     }
 </script>
 <style>
