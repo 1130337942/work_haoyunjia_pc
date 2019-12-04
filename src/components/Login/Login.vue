@@ -189,8 +189,8 @@ export default {
                   localStorage.setItem("mobile",this.userName);
                   localStorage.setItem("passwd",this.password);
                   localStorage.setItem("key_token", result.data.token);
-                  localStorage.removeItem('TagsView');
                   this.$router.push('/index');
+                 
                   
                }
           }).catch(err => {

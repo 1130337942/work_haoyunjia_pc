@@ -7,6 +7,7 @@
 */
 <template>
 	<div>
+		<!-- {{getUserCode}}全部 -->
 		<div class="clearfix referResult">
 			<div style='width:100%;'>
 				<ul class='clearfix top_screen'>
@@ -70,14 +71,14 @@
 		<div class="clearfix tasksResult">
 			<div class="left">
 				<!-- <el-button size="mini" @click="centerDialogVisible = true">新建</el-button> -->
-				<el-button type="primary" icon="el-icon-search" size='mini' @click="List2">查询</el-button>
-				<el-button size="mini" @click="toLead = true">导入</el-button>
-				<el-button size="mini" @click="Derive">导出</el-button>
-				<el-button size="mini" @click='assignRoles'>分配角色</el-button>
-				<el-button size="mini" style="margin-left: 10px;">高级搜索</el-button>
+				<el-button type="primary" icon="el-icon-search" size='mini' @click="List2" v-show="code['code1']">查询</el-button>
+				<el-button size="mini" @click="toLead = true" v-show="code['code9']">导入</el-button>
+				<el-button size="mini" @click="Derive"  v-show="code['code8']">导出</el-button>
+				<el-button size="mini" @click='assignRoles'  v-show="code['code10']">分配角色</el-button>
+				<el-button size="mini" style="margin-left: 10px;"  v-show="code['code1']">高级搜索</el-button>
 			</div>
 			<div class="right">
-				<el-button size="mini" @click="refresh">刷新</el-button>
+				<el-button size="mini" @click="refresh" v-show="code['code1']">刷新</el-button>
 				<el-button size="mini">列表设置</el-button>
 			</div>
 		</div>
@@ -116,7 +117,7 @@
 				<el-table-column show-overflow-tooltip prop="createUserName" label="创建人" align="center" width="80"></el-table-column>
 				<el-table-column show-overflow-tooltip prop="createDate" label="创建时间" align="center" width="160"></el-table-column>
 				<el-table-column show-overflow-tooltip prop='taxStatusText' label="临时税务登记" align="center" width="160"></el-table-column>
-				<el-table-column show-overflow-tooltip prop label="附件" align="center" fixed="right" width="160">
+				<el-table-column v-if="code['code11']" show-overflow-tooltip prop label="附件" align="center" fixed="right" width="160">
 					<template slot-scope="scope">
                             <div v-if="scope.row.taxStatusText == null" @click='dialog_sponsor(scope.row.freelanceUserId,scope.row.partnerCompanyCode)' class='btn_table'>发起</div>
                             <div v-if="scope.row.taxStatusText == '待签署' || scope.row.taxStatusTex == '草稿'" @click='examine(scope.row.downloadUrl)' class='btn_table'>查看</div>
@@ -446,13 +447,14 @@
 <script>
 import { open } from 'fs';
 import { getDictItemsByCodes, list, partnerExport, getTemplateUrl, importUrl, partnerList, updateBizRolePc, startTax, getRequestCode, check } from '../../api/api';
+import { mapState, mapActions } from 'vuex'
 //导出
 import FileSaver from 'file-saver'
 import XLSX from 'xlsx'
 let _loadsh = require('loadsh');
 
 export default {
-	name: 'regard',
+	name: 'Partner',
 	data() {
 		return {
 			flag:'',//服务人员校验提示内容显示控制
@@ -563,24 +565,79 @@ export default {
 				fontSize: '14px',
 				fontFamily: "思源",
 				fontWeight: 500
-			}
+			},
+			code:{
+				'code1':false, //查看
+				'code10':false,//分配角色
+				'code11':false,//发起纳税登记
+				'code2':false,//新建
+				'code4':false,//基本信息编辑
+				'code5':false,//业务角色编辑
+				'code6':false,//银行卡管理
+				'code7':false,//合作状态管理
+				'code8':false,//导出
+				'code9':false,//导入
+			},
+			isCode:false
 		}
 	},
-	methods: {
-	//获取类型id
-	selectContract(vId){
-		this.companyType = vId
+	computed:{
+		//获取是否有权限
+		...mapState(['getUserCode'])
 	},
-	//创建时间
-    getSqlBeginDate(val) {
-		if(this.sqlDate != null){
-            this.sqlBeginDate = this.sqlDate[0];
-            this.sqlEndDate = this.sqlDate[1];
-        }else if(this.sqlDate == null){
-            this.sqlBeginDate = '';
-            this.sqlEndDate = '';
-        }
-    },
+	watch:{
+		// //处理权限code编码
+		getUserCode(){
+			console.log(this.getUserCode)
+			// console.log(this.isCode)
+			// if(this.isCode ){
+				if(this.getUserCode.length == 0) return false
+				let codeJson= this.$codeJson()
+				this.getUserCode.forEach((item)=>{
+					this.code[codeJson[item]] = true
+				});
+				// this.isCode = false
+				console.log(this.code['code1']+'----code1全部')
+			// }
+			
+			
+		}
+	},
+	activated(){
+		// console.log(this.code['code1']+'----code1全部')
+		// if(this.getUserCode.length <= 0  ){
+		// 	this.isCode = true
+		// }else{
+		// 	this.isCode = false
+		// } 
+		// if(this.getUserCode.length == 0 )return false
+		// let codeJson= this.$codeJson()
+		// this.getUserCode.forEach((item)=>{
+		// 	this.code[codeJson[item]] = true
+		// })
+		
+	},
+	created() {
+		var $cookie = this.$cookie;
+		this.$cookie.get('token');
+		this.getDictItemsByCodes1();
+		this.List1();
+	},
+	methods: {
+		//获取类型id
+		selectContract(vId){
+			this.companyType = vId
+		},
+		//创建时间
+		getSqlBeginDate(val) {
+			if(this.sqlDate != null){
+				this.sqlBeginDate = this.sqlDate[0];
+				this.sqlEndDate = this.sqlDate[1];
+			}else if(this.sqlDate == null){
+				this.sqlBeginDate = '';
+				this.sqlEndDate = '';
+			}
+		},
 		//上传
 		changeFile(file) {
 			this.fileList.push(file)
@@ -736,6 +793,7 @@ export default {
 		},
 		//列表
 		List1: _loadsh.debounce(function(){  
+			if(!this.code['code1']) return false //没有查看权限功能
 			let param = {param:JSON.stringify({
 					companyId: this.$cookie.get('currentCompanyId'), //公司ID
 					keyword: this.Findkeyword, //搜索关键字
@@ -1148,12 +1206,7 @@ export default {
             },
 	},
 	
-	created() {
-		var $cookie = this.$cookie;
-		this.$cookie.get('token');
-		this.getDictItemsByCodes1();
-		this.List1();
-	}
+	
 }
 </script>
 <style lang="scss">

@@ -1,11 +1,19 @@
 import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
-import store from './vuex'
+import Vuex from 'vuex'
 import myjs from '@/myJS'
 import cookie from 'js-cookie';
 import axios from 'axios'
 import '@/assets/theme/index.css'
+
+import creatStore from './store/store'
+import publicPrototype from '@/assets/js/publicPrototype'
+
+Vue.use(Vuex);
+Vue.use(publicPrototype);
+
+const store = creatStore();
 
 Vue.prototype.$cookie = cookie;
 /*element*/

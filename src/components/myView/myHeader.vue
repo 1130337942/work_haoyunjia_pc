@@ -174,6 +174,7 @@
 <script>
 import { type } from "os";
 import {listCompany,logout} from '../../api/api'
+import {mapMutations} from 'vuex'
 export default {
   name: "myHeader",
   data() {
@@ -188,6 +189,7 @@ export default {
     };
   },
   methods: {
+    ...mapMutations(['tabArrClear']),
     handleClick(tab, event) {
       /*console.log(tab, event);*/
     },
@@ -215,7 +217,8 @@ export default {
           if(result.code == "000000"){
             this.$cookie.remove("token");
             localStorage.removeItem('key_token');
-            localStorage.removeItem('TagsView');
+            sessionStorage.clear();
+            this.tabArrClear()
             this.$router.push("/Login");
           }else if(result.code == "100000"){
 

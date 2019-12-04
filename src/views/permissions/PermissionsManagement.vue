@@ -148,6 +148,7 @@
         @closeDialogMembersFn='closeDialogMembersFn'
         ref="membersDialog">
         </add-members-el>
+        {{getUserCode}}
      </div>
  </template>
  
@@ -160,10 +161,11 @@
         getRoleUserByCompanyId,
         deleteRoleEmployee,
         updateResource,
-        ifUserIsRole
+        // ifUserIsRole
     } from '@/api/mgModule/authorityApi';
     import { getCompanyId , getUserId} from '@/api/cookieStorage';
     import {departmentDisposeFn} from '@/assets/js/common'
+    import {mapState,mapGetters,mapActions} from 'vuex'
     export default {
         data(){
             return{
@@ -185,11 +187,15 @@
                 serveTrueData:[], //保存 权限  true  的数据
                 treeKey1:[],//树形结构默认展开第一个
                 checkedKey1:'',//默认选中第一个
+                // getUserCode:[],//权限编码
             }
         },
         components:{
             addRoleEl,//添加角色和角色组
             addMembersEl,//添加成员
+        },
+        computed:{
+            ...mapGetters(['getUserCode'])
         },
         watch: {
             searchVal(val) {
@@ -199,21 +205,11 @@
         created(){
             //角色列表
             this.getRoleSetByCompanyIdFn();
-            this.ifUserIsRoleFn()
+            
+            this.getUserCodeFn()
         },
         methods: {
-            ifUserIsRoleFn(){
-                let data = {
-                    userId:this.userId,
-                    code:"4=1=1_1",
-                    companyId:this.companyId
-                };
-                ifUserIsRole(data).then(res=>{
-                    console.log(res)
-                }).catch(error=>{
-                    console.log(error)
-                })
-            },
+            ...mapActions(['getUserCodeFn']),
             //点击角色列表
             treeClickFn(roleData,Node,el){
                 console.log(roleData)

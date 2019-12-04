@@ -597,12 +597,6 @@ let _loadsh = require('loadsh');
             this.List();
         },
         activated(){
-            console.log(this.$route.meta.keepAlive);
-            // if(!this.$route.meta.keepAlive){
-            //     this.$route.meta.keepAlive = false;
-            // }else{
-            //     this.$route.meta.keepAlive = true;
-            // }
         }
     }
 </script>

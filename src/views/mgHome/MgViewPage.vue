@@ -49,18 +49,11 @@
             color: #ffffff;
             padding: 0px;
         }
-        .el-aside{
-            overflow: hidden;
-        }
+      
          /deep/ .el-main {
             background-color: #e9eef3;
             color: #333;
             padding: 0;
-        }
-        /deep/ .el-menu {
-            background-color: #272727;
-            width: 220px;
-           
         }
         /deep/ .el-container{
             height: 100%;
@@ -68,31 +61,6 @@
         /deep/ .el-aside{
              background-color: #272727;
         }
-        /deep/ .el-submenu__title{
-            color: #ffffff;
-            // padding-left: 20px;
-            &:hover{
-                background-color: rgba(27, 27, 27, 1);
-            }
-        }
-        /deep/ .el-menu-item.is-active{
-            color: #ffffff;
-            background-color: rgba(27, 27, 27, 1);
-            
-        }
-        /deep/ .el-menu-item{
-            color: #ffffff;
-            // padding-left: 20px;
-            background-color: #272727;
-            &:hover{
-                background-color: rgba(27, 27, 27, 1);
-            }
-        }
-       .tab-box{
-           padding-top: 2px;
-           padding-bottom: 1px;
-           padding-left: 1px;
-           background: #ffffff;
-       }
+        
     }
 </style>

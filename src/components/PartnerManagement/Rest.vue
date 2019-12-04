@@ -138,7 +138,7 @@ import XLSX from 'xlsx'
 let _loadsh = require('loadsh');
 
 export default {
-	name: 'regard',
+	name: 'Rest',
 	data() {
 		return {
 			companyTypearr: [{

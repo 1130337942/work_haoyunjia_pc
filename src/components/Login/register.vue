@@ -152,6 +152,12 @@ import {register,verifyCode} from '../../api/api'
                             this.$cookie.set('token',result.data.token);
                             this.$cookie.set('userName','V' + this.ruleForm2.mobile);
                             this.$router.push('/TheCompanyIn');
+                            this.$cookie.set('currentCompanyName',result.data.currentCompanyName)
+                            this.$cookie.set('currentCompanyId',result.data.currentCompanyId)
+                            this.$cookie.set('mobile',this.userName)
+                            this.$cookie.set('userId',result.data.userId)
+                            this.$cookie.set('tabIcon',result.data.tabIcon)
+                            localStorage.setItem("key_token", result.data.token);
                         }
                     }).catch(err => {
                         alert('请求失败')
@@ -235,9 +241,6 @@ import {register,verifyCode} from '../../api/api'
         color:rgba(231, 154, 24, 1);
         border:0;
         font-size:14px;
-    }
-    .el-form-item__content .el-button--primary{
-
     }
 
 </style>

@@ -342,7 +342,7 @@ import FileSaver from 'file-saver'
 import XLSX from 'xlsx'
 
 export default {
-	name: 'regard',
+	name: 'servicePeopleList',
 	data() {
 		return {
 			dialoghint:false,//添加服务人员成功弹出框

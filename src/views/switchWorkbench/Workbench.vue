@@ -95,6 +95,7 @@
 <script>
     import mgHeaderEl from '@/components/mgElement/MgHeader.vue'
     import { workBenchList ,switchWorkbench} from "@/api/api";
+    import {mapMutations} from 'vuex'
     let _ = require('lodash')
     export default {
         data(){
@@ -128,6 +129,7 @@
             },
         },
         methods:{
+            ...mapMutations(['tabArrClear']),
             isTooltipShowFn(index){
                 this[`isTooltipShow${index}`] = true
                 setTimeout(()=>{
@@ -169,14 +171,19 @@
            
             //点击切换工作台
             switchFn(item){
+                if(item.status == 1){
+                    this.$router.push('/index')
+                    return
+                }
                 let param = {param:JSON.stringify({
                     id:item.id,//公司id
                     workBenchType:item.workBenchType,//工作台类型
                 })}
                 switchWorkbench(param).then(result => {
-                    console.log(result)
+                    // console.log(result)
                     if(result.code*0 === 0){
-                        localStorage.removeItem('TagsView');
+                        sessionStorage.clear();
+                        this.tabArrClear()
                         this.$cookie.set('currentCompanyName',item.companyName)
                         this.$cookie.set('currentCompanyId',item.id)
                         this.$cookie.set('tabIcon',item.tabIconUrl)

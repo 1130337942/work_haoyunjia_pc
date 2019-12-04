@@ -13,4 +13,9 @@ export function switchWorkbench (data, params, header) {
     const url = VUE_APP_basic + '/pcworkbench/rest/switchWorkbench'
     return api.post(url, params, header, data);
 }
+//获取PC端菜单信息(业务工作台)
+export function getPcMenusByOrgId (data, params, header) {
+    const url = VUE_APP_export + '/orgDiv/rest/getPcMenusByOrgId'
+    return api.post(url, params, header, data);
+}
   

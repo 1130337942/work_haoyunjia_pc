@@ -31,6 +31,7 @@
 
 <script>
     import {listCompany,logout} from '../../api/api'
+    import {mapMutations} from 'vuex'
     export default {
         data(){
             let companyUrl = this.$cookie.get('tabIcon');
@@ -55,8 +56,8 @@
             this.watchRouteFn()
         },
         methods:{
+            ...mapMutations(['tabArrClear']),
             backIndex(){
-                localStorage.removeItem('TagsView');
                 this.$router.push('/index');
             },
             exitFn(){
@@ -68,8 +69,8 @@
                     if(result.code == "000000"){
                         this.$cookie.remove("token");
                         localStorage.removeItem('key_token');
-                        localStorage.removeItem('TagsView');
-                        sessionStorage.removeItem('tabArr')
+                        sessionStorage.clear();
+                        this.tabArrClear()
                         this.$router.push("/Login");
                     }else if(result.code == "100000"){
 

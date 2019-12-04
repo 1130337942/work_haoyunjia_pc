@@ -42,7 +42,9 @@ let routes = [
             path: '/',
             name: 'myView',
             component: ()=>import(/*webpackChunkName:'ImportHYJ'*/ '@/components/myView/myView'),
-          
+            meta: {
+                name: '业务工作台'
+            },
             redirect:{name: 'index'},
             children: [
                 {
@@ -50,7 +52,7 @@ let routes = [
                     name: 'index',
                     component: () => import (/*webpackChunkName:'ImportHYJ'*/ '@/components/contents/index'),
                     meta: {
-                        keepAlive: false, // 不需要缓存
+                        // keepAlive: false, // 不需要缓存
                         name: '首页'
                       
                     }
@@ -60,7 +62,7 @@ let routes = [
                     name: 'AllBill',
                     component: () => import (/*webpackChunkName:'ImportHYJ'*/ '@/components/FlexibleBill/AllBill'),
                     meta: {
-                        keepAlive: false, // 不需要缓存
+                        // keepAlive: false, // 不需要缓存
                     }
                 },
                 {
@@ -68,7 +70,7 @@ let routes = [
                     name: 'ProductCenter',
                     component: () => import (/*webpackChunkName:'ImportHYJ'*/ '@/components/ProductCenter/ProductCenter'),
                     meta: {
-                        keepAlive: true, // 需要缓存
+                        // keepAlive: true, // 需要缓存
                     }
                 },
                 {
@@ -131,7 +133,8 @@ let routes = [
                     name: 'CustomerContract',
                     component: () => import (/*webpackChunkName:'ImportHYJ'*/ '@/components/Contract/CustomerContract'),
                     meta: {
-                        keepAlive: true // 需要缓存
+                        keepAlive: true, // 需要缓存
+                        name:'客户协议管理',
                     }
                 },
                 {
@@ -187,8 +190,23 @@ router.beforeEach((to,from,next)=>{
         if(token === '') {
             next('/getByOrgAndCompanyId');
         }else {
+          
             next();
+            // let tabArr1 = JSON.parse(sessionStorage.tabArr1);
+            // let isfind =  tabArr1.some(item=>  item.name == to.meta.name )
+            // console.log(tabArr1)
+            // console.log(isfind)
+            // // console.log('keepAlive-----'+to.meta.keepAlive)
+            // // console.log("to----"+to.meta.name,"from------"+from.meta.name)
+            // to.meta.keepAlive = isfind?true:false
+            // console.log('keepAlive-----'+to.meta.keepAlive)
+
+            // console.log(router)
+            
         }
     }
+   
+   
+   
   });
 export default router;

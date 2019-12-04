@@ -8,26 +8,27 @@ const sliderData = [
     {
         name:'组织架构',
         path:'/OrganizationalStructure',
-        // code:
+        code:'4=1=1_1'
     },
     {
         name:'权限管理',
-        path:'/PermissionsManagement'
+        path:'/PermissionsManagement',
+        code:'4=1=1_4'
     },
-    // {
-    //     name:'企业设置',
-    //     // id:"aside2",
-    //     child:[
-    //         {
-    //             name:'基础设置',
-    //             path:'/CompanyBasisSet'
-    //         },
-    //         {
-    //             name:'短信模板',
-    //             path:'/CompanySmsSet'
-    //         },
-    //     ]
-    // },
+    {
+        name:'企业设置',
+        // id:"aside2",
+        child:[
+            {
+                name:'基础设置',
+                path:'/CompanyBasisSet'
+            },
+            {
+                name:'短信模板',
+                path:'/CompanySmsSet'
+            },
+        ]
+    },
    
 ]
 export default sliderData

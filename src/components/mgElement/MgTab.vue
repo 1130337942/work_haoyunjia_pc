@@ -2,13 +2,11 @@
     <div class="tabs"> 
         <!--  effect="dark"
         :class="thisName == item.name?'bg-active':'bg-default'" -->
-        
         <el-tag 
             :closable="index>0" 
-            v-for="(item,index) in routTabArr" 
+            v-for="(item,index) in pageTabArr" 
             :key="index"
-           
-            @click="changeTab(item.path)"
+            @click="changeTab(item)"
             @close="handleClose(item)"
             :disable-transitions="true"
             :color="thisName == item.name?'#666666':'#fbf7f7'" 
@@ -18,71 +16,60 @@
     
 </template> 
 <script>
+import { json } from 'body-parser'
+import {mapState,mapMutations,mapActions} from 'vuex'
 export default {
     data(){
         return{
-            routTabArr: sessionStorage.tabArr?JSON.parse(sessionStorage.tabArr):[{
-                path:this.$route.path,
-                name:this.$route.meta.name
-            }],
-            getTab:[],
-            isObj:{},
             thisName:'',
         }
     },
     watch: {
         $route(){
-            this.getRouteFn()
+            this.getRouteFn();
+            // console.log(this.pageTabArr)
         }
-    },
-    created(){
-        console.log(this.$route.path)
-        this.getRouteFn()
     },
     computed:{
-        //管理控制台模块 还是 业务工作台模块
-        moduleType(){
-            if(this.$route.path == '/mgHome'){
-                
-            }
-        }
+        ...mapState(['pageTabArr']),
+    },
+    created(){
+        this.getRouteFn()
     },
     methods: {
+        ...mapMutations(['commitTabArrFn','closeTabArrFn']),
         getRouteFn(){
-            console.log(this.$route)
-           
-            let thisRoute = this.$route;
-            let thisRouteName = thisRoute.meta.name;
-            let tabObj = {
-                path:thisRoute.path,
-                name:thisRouteName
+            // console.log(this.$route.name)
+            if(this.$route.name == 'index'){ //业务工作台
+                sessionStorage.setItem('moduleTabType','1')
+            }else if(this.$route.name == 'MgHome'){//管理控制台
+                sessionStorage.setItem('moduleTabType','2')
             }
-            var ishas = this.routTabArr.some(item=>{
-                return thisRouteName == item.name
-            })
-            if(!ishas){
-                this.routTabArr.push(tabObj)
-            }
-            this.thisName = thisRouteName
-            sessionStorage.setItem('tabArr',JSON.stringify(this.routTabArr))
-           
+            this.tabArrFn()
         },
-        changeTab(path){
-            this.$router.push(path)
+        changeTab(item){
+            this.$router.push({name:item.pathName})
         },
         handleClose(tag){
-            // console.log(tag)
-            // console.log(this.routTabArr.indexOf(tag))
-            this.routTabArr.splice(this.routTabArr.indexOf(tag), 1);
-            // console.log(this.routTabArr)
+            this.closeTabArrFn(tag)
             if(this.thisName == tag.name){
-                this.$router.push(this.routTabArr[this.routTabArr.length-1].path)
+                this.$router.push(this.pageTabArr[this.pageTabArr.length-1].path)
             }else{
                 this.thisName = this.$route.meta.name
             }
-            sessionStorage.setItem('tabArr',JSON.stringify(this.routTabArr))
-            
-        }
+        },
+        tabArrFn(){
+            let thisRoute = this.$route;
+            this.thisName =  thisRoute.meta.name;
+            let tabObj = {
+                path:thisRoute.path,
+                name:this.thisName,
+                pathName:thisRoute.name
+            }
+            this.commitTabArrFn(tabObj);
+          
+        },
+       
     }
 }
 </script>

@@ -80,6 +80,7 @@
 						style="margin-top:9px;"
 						v-if="showBtn"
 						@click="addEmployeesFn()"
+						v-show="code['code2']"
 					>添加成员</el-button>
 				</p>
 				<el-table :data="tableData2" style="width: 100%;" height="300" border empty-text="暂未查到匹配条件的数据">
@@ -156,6 +157,7 @@
 		@refreshFn="refreshFn"
         ref='employeesDialog'
     ></add-employees-dialog>
+		{{getUserCode}}
     </div>
 </template>
 
@@ -163,6 +165,7 @@
 import { listByCompanyId, listByParentId, listByLike, addEmployee, updateDepartmentById } from '../../api/api'
 import addDepartmentDialog from '@/components/mgDialog/addDepartment.vue'
 import addEmployeesDialog from '@/components/mgDialog/addEmployees.vue'
+import {mapState,mapGetters,mapActions} from 'vuex'
 export default {
 	data() {
 		return {
@@ -192,17 +195,43 @@ export default {
 			departmentId:'',//当前选择的部门id
 			// --------------------------------------------------
 			isDepartmenShow: false, //是否显示添加部门弹框
-			isEmployeesShow: false //是否显示添加部门弹框
+			isEmployeesShow: false ,//是否显示添加部门弹框
+			code:{
+				'code1':false,//查看组织架构
+				'code2':false//添加员工
+			}
 		}
 	},
 	components: {
 		addDepartmentDialog,
 		addEmployeesDialog
 	},
+	computed:{
+    	...mapState(['getUserCode'])
+	},
+	watch:{
+		getUserCode(){
+			let codeJson=this.$codeJson()
+			this.getUserCode.forEach((item)=>{
+				this.code[codeJson[item]] = true
+			})
+			
+		}
+	},
 	created() {
 		//this.listByCompanyId1()
+		// vue.ifUserIsRoleFn()
+		// this.$api.ifUserIsRoleFn()
+		// this.$ifUserIsRoleFn()
+		
+        this.getUserCodeFn()
+		console.log(this.$codeJson())
+	},
+	mounted(){
+	
 	},
 	methods: {
+		...mapActions(['getUserCodeFn']),
 		//tree 当前点击的数据 
 		handleNodeClick(node,data,value) {
 			// console.log('-----------------node')

@@ -1,124 +1,85 @@
 <template>
     <div>
-        <el-menu 
-        class="el-menu-demo" 
-        mode="vertical" 
-        :unique-opened='true'>
-            <div v-for="(firstItem,firstIndex) in this.datalist" :key="'first'+firstIndex">
-                  <!--el-submenu 为菜单列表，含有箭头，在children.length大于0的时候使用-->
-                <el-submenu :index="firstItem.path" v-if="firstItem.children&&firstItem.children.length!==0">
-                <template slot="title"><i :class="firstItem.icon"></i><span>{{firstItem.name}}</span></template>
-                    <div v-for="(secondItem,secondIndex) in firstItem.children" :key="'second'+secondIndex">
-                            <el-submenu v-if="secondItem.children&&secondItem.children.length!==0" :index="secondItem.path">
-                            <template slot="title">{{secondItem.name}}</template>
-                                <!-- 因为三级菜单下面没有四级所以不需要if判断这样的话就不用再套上一层div -->
-                                <el-menu-item
-                                :index="thirdItem.path"
-                                iscustom="true"
-                                v-for="(thirdItem,thirdIndex) in secondItem.children"
-                                :key="'third'+thirdIndex"
-                                @click="goPath(thirdItem.path,thirdItem.name)">
-                                <template slot="title">{{thirdItem.name}}</template>
-                                </el-menu-item>
-
-                            </el-submenu>
-
-                            <el-menu-item
-                                    :index="secondItem.path"
-                                    v-else
-                                    @click="goPath(secondItem.path,secondItem.name)">
-                            <template slot="title">{{secondItem.name}}</template>
-                            </el-menu-item>
-                    </div>
-                </el-submenu>
-                  <!--在children.length等于0时，使用不带箭头的菜单-->
-                <el-menu-item :index="firstItem.path"  @click="goPath(firstItem.path,firstItem.name)" v-else>
-                    <template slot="title"><i class="el-icon-s-home"></i>{{firstItem.name}}</template>
-                </el-menu-item>
-            </div>
+        <el-menu  :default-active="thisPath" class="el-menu-vertical-demo" unique-opened
+        background-color="#272727" text-color="#fff">
+            <el-submenu :index="item.name" v-for="item in sideData" :key='item.code'>
+                <template slot="title"><i :class="item.icon"></i> <span>{{item.name}}</span> </template>
+                <el-menu-item @click="goPath(list)" :index="list.path" v-for="list in item.children" :key='list.path'>{{list.name}}</el-menu-item>
+            </el-submenu>
+            <!-- 没有子集菜单 -->
+            <!-- <el-menu-item index="2"><i class="el-icon-menu"></i><span slot="title">导航二</span></el-menu-item> -->
         </el-menu>
     </div>
 </template>
 <script>
-    import { getPcMenusByOrgId } from '@/api/api';
+    import { getPcMenusByOrgId } from '@/api/matchesModule/matchesApi';
     import { getCompanyId } from '@/api/cookieStorage';
+    import { mapMutations,mapActions } from 'vuex'
     export default {
         name: 'ProductCenter',
         data() {
             return {
                 companyId:getCompanyId(),
-                isCollapse: true,
-                menuDoms: [],
-                datalist:[],
-
+                sideData:[],//侧边栏数据
+                thisPath:'',//当前路由
+                thisRouter:{},
+            }
+        },
+        watch:{
+            $route(){
+                this.getRouteFn()
             }
         },
         created(){
-			// let urlHost = window.location.host;
-            // console.log(urlHost);
-            // if(urlHost == 'manager.goodluckplus.com' || urlHost == 'fatmanager.goodluckplus.com'){
-            //     this.datalist = this.list;
-            // }else{
-            //     this.datalist = this.list2;
-            // }
-            // this.datalist = this.list2;
-           this.getPcMenusByOrgId1();
-            
+            this.getPcMenusByOrgIdFn();
         },
         methods: {
-           
-           
+            ...mapMutations(['commitPostUserCodeFn']),
+            ...mapActions(['getUserCodeFn']),
+            getRouteFn(){
+                this.thisPath = this.$route.path;
+                this.thisRouterDataFn(this.sideData)
+                if(!this.thisRouter.code) return
+                this.commitPostUserCodeFn(this.thisRouter.code)
+                //获取是否有权限
+		        this.getUserCodeFn();
+            },
             // 点击左侧导航跳转右侧内容区域
-            goPath(path, name) {
-                this.$router.push(path);
+            goPath(item) {
+                this.$router.push(item.path);
+                //  this.commitPostUserCodeFn(item.code)
             },
             //菜单配置
-            getPcMenusByOrgId1(){
-                let param = {param:JSON.stringify({
-                    orgId:localStorage.getItem('host_id'),
-                    companyId:this.companyId
-                })}
-                getPcMenusByOrgId(param).then(result => {
-                   // console.log(result)
-                    this.datalist = result.data;
-                }).catch(error => {
-                    this.$router.push('/Login');
-                });
+            async getPcMenusByOrgIdFn(){
+                try{
+                    let data = {
+                        orgId:localStorage.getItem('host_id'),
+                        companyId:this.companyId
+                    };
+                    let res = await getPcMenusByOrgId(data)
+                    this.sideData = res.data;
+                    this.getRouteFn()
+                }catch(error){
+                    console.log(error)
+                }
             },
-        },
+            thisRouterDataFn(data){
+                data.forEach((item)=>{
+                    if(item.children){
+                        this.thisRouterDataFn(item.children)
+                    }
+                    if(item.path == this.thisPath){
+                        this.thisRouter = item
+                    }
+                   
+                });
+            }
+        }
        
     }
 </script>
-<style>
-    /* el-menu el-menu--popup el-menu--popup-bottom-start */
-
-    .el-menu-demo {
-        width: 220px;
-        background: #272727;
-        position: absolute;
-    }
-    .el-submenu__title,.el-menu-item{
-        color:#FFFFFF;
-    }
-    .el-menu-item:focus, .el-menu-item:hover, .el-submenu__title:focus, .el-submenu__title:hover {
-        color:#FFFFFF;
-        outline: 0;
-        background-color:rgba(27, 27, 27, 1)
-    }
-    .el-menu-item.is-active{
-        color:#FFFFFF;
-    }
-    .el-submenu.is-active .el-submenu__title {
-    border-bottom-color: red;
-    }
-
-    .el-submenu__title:hover {
-        background-color:rgba(27, 27, 27, 1)
-    }
+<style  lang="scss" scoped>
     .el-menu{
-        background:rgba(39, 39, 39, 1);
-    }
-    .el-submenu .el-menu-item{
-        padding-left: 50px !important;
+       border-right:none
     }
 </style>

@@ -15,10 +15,13 @@
             </div>
             <div class="bottom_content">
               <div class="content">
-                <keep-alive>
+                <!-- <keep-alive>
                   <router-view v-if="$route.meta.keepAlive"/>
                 </keep-alive>
-                <router-view v-if="!$route.meta.keepAlive"/> 
+                <router-view v-if="!$route.meta.keepAlive"/>  -->
+                <keep-alive :include='include'>
+                  <router-view></router-view>
+                </keep-alive>
               </div>
             </div>
           </el-main>
@@ -32,12 +35,32 @@
 import myHeader from "@/components/myView/myHeader";
 import myAside from "@/components/myView/myAside";
 import mgTabEl from '@/components/mgElement/MgTab.vue'
+
+import {mapState,mapGetters} from 'vuex'
 export default {
   name: "myView",
+  data(){
+    return {
+      // include:'Partner,Client',
+      // include:'',
+      arr:[]
+    }
+  },
   components: {
     myHeader,
     mgTabEl,
     "zh-menu": myAside
+  },
+  computed:{
+    ...mapState(['include'])
+  },
+  watch:{
+    $route(){
+      // console.log(this.include)
+    }
+  },
+  methods:{
+
   }
 };
 </script>
