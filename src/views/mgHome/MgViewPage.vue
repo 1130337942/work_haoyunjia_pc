@@ -6,7 +6,9 @@
                 <el-aside width="220px"><mg-aside-el></mg-aside-el></el-aside>
                 <el-main>
                     <div class="tab-box"><mgTabEl></mgTabEl></div>
-                    <router-view />
+                    <!-- <keep-alive include="OrganizationalStructure,PermissionsManagement"> -->
+                        <router-view />
+                    <!-- </keep-alive> -->
                 </el-main>
             </el-container>
         </el-container>

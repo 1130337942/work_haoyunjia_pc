@@ -7,6 +7,7 @@
 */
 <template>
     <div>
+        <!-- {{getUserCode}}用工协议管理 -->
             <div class="clearfix referResult">
                <div class="left" style='width:100%'>
                     <ul class='clearfix top_screen'>
@@ -72,12 +73,12 @@
             </div>
             <div class="clearfix tasksResult">
                 <div class="left">
-                    <el-button size="mini" @click=List2()>搜索</el-button>
-                    <el-button size="mini" @click='companyCertification1'>新建</el-button>
-                    <el-button size="mini" @click='interiorList2' :disabled='isDisabled3'>发起签署</el-button>
-                    <el-button size="mini" style="margin-left: 10px;">高级搜索</el-button>
-                    <el-button size="mini" style="margin-left: 10px;" @click="interiorList3">下载</el-button>
-                    <el-button size="mini" style="margin-left: 10px;" @click="selectAll">{{this.btnselectAll}}</el-button>
+                    <el-button v-show="code['SupplierContract1']" size="mini" @click=List2()>搜索</el-button>
+                    <el-button v-show="code['SupplierContract2']" size="mini" @click='companyCertification1'>新建</el-button>
+                    <el-button v-show="code['SupplierContract3']" size="mini" @click='interiorList2' :disabled='isDisabled3'>发起签署</el-button>
+                    <el-button v-show="code['SupplierContract1']" size="mini" style="margin-left: 10px;">高级搜索</el-button>
+                    <el-button v-show="code['SupplierContract4']" size="mini" style="margin-left: 10px;" @click="interiorList3">下载</el-button>
+                    <el-button v-show="code['SupplierContract3'] || code['SupplierContract4']" size="mini" style="margin-left: 10px;" @click="selectAll">{{this.btnselectAll}}</el-button>
                 </div>
                 <div class="right">
                     <el-button size="mini" @click=refresh>刷新</el-button>
@@ -685,9 +686,56 @@ let _loadsh = require('loadsh');
                 total112: 0, // 总条数
                 pageSize110: 10, // 每页的数据条数
                 pageSize112: 10, // 每页的数据条数
+                code:{
+                    'SupplierContract1':false,//查看
+                    'SupplierContract2':false,//新建协议
+                    'SupplierContract3':false,//发起签署
+                    'SupplierContract4':false,//下载
+                },
+                getUserCode:[]
             }
         },
+        created(){
+            this.getUserCodeFn()
+
+            this.List();
+            //服务类型
+           // this.getDictItemsByCodes1();
+            //当前公司服务类型
+            this.getDictItemsByCodes2();
+            //根据公司ID获取模板
+            this.getTemplateByCompanyId1();
+            //支付方式
+            this.payment();
+            //当前日期
+            // let _timetamp = new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,0)+'-'+String(new Date().getDate()).padStart(2,0);
+            // let time  =  new Date(_timetamp).getTime() +2*3600*1000;
+            // this.timetamp = time;
+            let _timetamp = new Date().getFullYear()+'/'+String(new Date().getMonth()+1).padStart(2,0)+'/'+String(new Date().getDate()).padStart(2,0);
+            let time  =  new Date(_timetamp).getTime();
+            this.timetamp = time;
+        },
         methods: {
+            //获取权限列表
+            async getUserCodeFn(){
+                try{
+                    let data = this.$codePostObj()
+                    let res = await this.$ifUserIsRoleFn(data)
+                        // console.log(res)
+                    this.getUserCode = res.data
+                    this.isCodeTrueFn()
+                }catch(error){
+                    console.log(error)
+                } 
+            },
+            //当前页面有权限为true
+            isCodeTrueFn(){
+                if(this.getUserCode.length == 0 )return false
+                let codeJson= this.$codeJson()
+                this.getUserCode.forEach((item)=>{
+                    this.code[codeJson[item]] = true
+                });
+            },
             //上一步
             prev(){
                 if(this.active === 0){
@@ -999,7 +1047,8 @@ let _loadsh = require('loadsh');
                 })
             },
              //列表
-            List: _loadsh.debounce(function(){       
+            List: _loadsh.debounce(function(){     
+                if(!this.code['SupplierContract1']) return false //没有查看权限功能  
                 let param = {param:JSON.stringify({
                     firstId:this.$cookie.get('currentCompanyId'), //甲方公司ID编码
                     belongCompanyId:this.$cookie.get('currentCompanyId'), //所属公司 供应商传乙方id 客户传甲方id
@@ -1526,24 +1575,7 @@ let _loadsh = require('loadsh');
             }   
                 
         },
-         created(){
-            this.List();
-            //服务类型
-           // this.getDictItemsByCodes1();
-            //当前公司服务类型
-            this.getDictItemsByCodes2();
-            //根据公司ID获取模板
-            this.getTemplateByCompanyId1();
-            //支付方式
-            this.payment();
-            //当前日期
-            // let _timetamp = new Date().getFullYear()+'-'+String(new Date().getMonth()+1).padStart(2,0)+'-'+String(new Date().getDate()).padStart(2,0);
-            // let time  =  new Date(_timetamp).getTime() +2*3600*1000;
-            // this.timetamp = time;
-            let _timetamp = new Date().getFullYear()+'/'+String(new Date().getMonth()+1).padStart(2,0)+'/'+String(new Date().getDate()).padStart(2,0);
-            let time  =  new Date(_timetamp).getTime();
-            this.timetamp = time;
-        }
+       
     }
 </script>
 <style lang="scss">

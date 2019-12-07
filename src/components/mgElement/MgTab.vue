@@ -45,7 +45,7 @@ export default {
             }else if(this.$route.name == 'MgHome'){//管理控制台
                 sessionStorage.setItem('moduleTabType','2')
             }
-            this.tabArrFn()
+            this.tabArrFn();
         },
         changeTab(item){
             this.$router.push({name:item.pathName})
@@ -67,7 +67,6 @@ export default {
                 pathName:thisRoute.name
             }
             this.commitTabArrFn(tabObj);
-          
         },
        
     }

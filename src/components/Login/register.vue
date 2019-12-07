@@ -3,7 +3,7 @@
               <el-form :model="ruleForm2"  status-icon :rules="rules2"  ref="ruleForm2" label-width="0" class="login-form">
                   <p class="title">注册</p>
                   <el-form-item prop="mobile" class="tel">
-                      <el-input v-model="ruleForm2.mobile" auto-complete="off" placeholder="请输入手机号"></el-input>
+                      <el-input v-model="ruleForm2.mobile" maxlength="11" auto-complete="off" placeholder="请输入手机号"></el-input>
                   </el-form-item>
                   <el-form-item prop="pass" class="pass">
                       <el-input type="password" v-model="ruleForm2.passwd" auto-complete="off" placeholder="输入密码"></el-input>
@@ -96,6 +96,11 @@ import {register,verifyCode} from '../../api/api'
                 buttonText: '发送验证码',
                 isDisabled: false, // 是否禁止点击发送验证码按钮
                 flag: true
+            }
+        },
+        watch:{
+            'ruleForm2.mobile':function(){
+                this.ruleForm2.mobile = this.ruleForm2.mobile.replace(/\s+/g,'')
             }
         },
         methods: {

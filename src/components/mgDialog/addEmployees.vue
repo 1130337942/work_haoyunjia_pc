@@ -212,7 +212,7 @@
                 </el-form>
             </div>
             <span slot="footer" class="dialog-footer">
-                <el-button type="warning" v-if="employeesData.type == 2 && this.isClickEdit == true" @click="editEmployeesFn()">编辑</el-button>
+                <el-button type="warning" v-if=" employeesData.type == 2 && this.isClickEdit == true && employeesData.OrganizationalStructure5 " @click="editEmployeesFn()">编辑</el-button>
                 <el-button type="warning" v-if="employeesData.type == 1 || this.isClickEdit == false" @click="saveEmployeesFn('formLabelAlign','hide')">保存</el-button>
                 <el-button type="warning" v-if="employeesData.type == 1" @click="saveEmployeesFn('formLabelAlign','show')">保存并继续添加</el-button>
             </span>

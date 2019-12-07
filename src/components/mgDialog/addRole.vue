@@ -84,7 +84,7 @@
                             this.editRoleFn()
                         }
                     } else {
-                        console.log('error submit!!');
+                        // console.log('error submit!!');
                         return false;
                     }
                 });
@@ -100,7 +100,7 @@
             },
             //父组组件点击事件 - 传参
             addRoleDialogFn(data){
-                console.log(data)
+                // console.log(data)
                 // console.log(this.$data)
                 this.dialogData = data
                 this.$set(this.formData,'type',data.isRole?'1':'2');//1:角色 2：角色组
@@ -120,7 +120,7 @@
                         companyId:this.companyId
                     }
                     let res = await getRoleSetByCompanyId(data)
-                    console.log(res)
+                    // console.log(res)
                     this.rolesData = res.data
                 }catch(error){
                     console.log(error)
@@ -131,7 +131,7 @@
                 if(this.formData.type==2){
                     delete this.formData.roleSetId
                 }
-                console.log(this.formData)
+                // console.log(this.formData)
                 try{
                     
                     let res = await addRole(this.formData)

@@ -1,5 +1,6 @@
 <template>
 	<div style="position: relative;margin:20px;" class="clearfix">
+		<!-- <div style="top: -18px;position: absolute;">{{getUserCode}}组织架构</div> -->
 		<div class="left leftBox">
 			<el-input
 				placeholder="请输入关键词搜索"
@@ -27,7 +28,7 @@
 			<div class="topTitle">
 				<p class="clearfix">
 					<span class='left'>{{addDepartmentName}}</span>
-					<i class="left" @click="editDepartmentFn()" style="margin-left:5px;" v-if="shows">编辑</i>
+					<i class="left" @click="editDepartmentFn()" style="margin-left:5px;" v-if="shows || code['OrganizationalStructure4']">编辑</i>
 				</p>
 				<el-breadcrumb separator-class="el-icon-arrow-right">
 					<el-breadcrumb-item :key="index" v-for="(item,index) in BreadcrumbList">
@@ -49,6 +50,7 @@
 						style="margin-top:9px;"
 						v-if="showBtn"
 						@click="addDepartmentFn()"
+						v-show="code['OrganizationalStructure3']"
 					>添加子部门</el-button>
 				</p>
 				<el-table
@@ -80,7 +82,7 @@
 						style="margin-top:9px;"
 						v-if="showBtn"
 						@click="addEmployeesFn()"
-						v-show="code['code2']"
+						v-show="code['OrganizationalStructure2']"
 					>添加成员</el-button>
 				</p>
 				<el-table :data="tableData2" style="width: 100%;" height="300" border empty-text="暂未查到匹配条件的数据">
@@ -157,7 +159,6 @@
 		@refreshFn="refreshFn"
         ref='employeesDialog'
     ></add-employees-dialog>
-		{{getUserCode}}
     </div>
 </template>
 
@@ -167,6 +168,7 @@ import addDepartmentDialog from '@/components/mgDialog/addDepartment.vue'
 import addEmployeesDialog from '@/components/mgDialog/addEmployees.vue'
 import {mapState,mapGetters,mapActions} from 'vuex'
 export default {
+	name:'OrganizationalStructure',
 	data() {
 		return {
 			formLabelAlignId:'',//上级id
@@ -197,9 +199,13 @@ export default {
 			isDepartmenShow: false, //是否显示添加部门弹框
 			isEmployeesShow: false ,//是否显示添加部门弹框
 			code:{
-				'code1':false,//查看组织架构
-				'code2':false//添加员工
-			}
+				'OrganizationalStructure1':false,//查看组织架构
+				'OrganizationalStructure2':false,//添加员工
+				'OrganizationalStructure3':false,//添加子部门
+				'OrganizationalStructure4':false,//部门管理（编辑/删除
+				'OrganizationalStructure5':false,//员工管理（编辑/删除
+			},
+			getUserCode:[]
 		}
 	},
 	components: {
@@ -207,31 +213,38 @@ export default {
 		addEmployeesDialog
 	},
 	computed:{
-    	...mapState(['getUserCode'])
-	},
-	watch:{
-		getUserCode(){
-			let codeJson=this.$codeJson()
-			this.getUserCode.forEach((item)=>{
-				this.code[codeJson[item]] = true
-			})
-			
-		}
+    	// ...mapState(['getUserCode'])
 	},
 	created() {
 		//this.listByCompanyId1()
-		// vue.ifUserIsRoleFn()
-		// this.$api.ifUserIsRoleFn()
-		// this.$ifUserIsRoleFn()
+		
 		
         this.getUserCodeFn()
-		console.log(this.$codeJson())
+		// console.log(this.$codeJson())
 	},
 	mounted(){
 	
 	},
 	methods: {
-		...mapActions(['getUserCodeFn']),
+		//获取权限列表
+		async getUserCodeFn(){
+			try{
+				let data = this.$codePostObj()
+				let res = await this.$ifUserIsRoleFn(data);
+				this.getUserCode = res.data
+				this.isCodeTrueFn()
+			}catch(error){
+				console.log(error)
+			}   
+		},
+		//当前页面有权限为true
+		isCodeTrueFn(){
+			if(this.getUserCode.length == 0 )return false
+			let codeJson= this.$codeJson()
+			this.getUserCode.forEach((item)=>{
+				this.code[codeJson[item]] = true
+			});
+		},
 		//tree 当前点击的数据 
 		handleNodeClick(node,data,value) {
 			// console.log('-----------------node')
@@ -272,6 +285,7 @@ export default {
 					companyId: this.$cookie.get('currentCompanyId') //公司ID
 				})
 				}
+				if(!this.code['OrganizationalStructure1']) return false //没有查看权限功能
 				listByCompanyId(param)
 					.then(result => {
 						if (result.code == '000000') {
@@ -592,7 +606,8 @@ export default {
                 let refsEmployeesData = {
 					title : '编辑员工',
 					type:2,
-					itemData
+					itemData,
+					OrganizationalStructure5:this.code['OrganizationalStructure5']
 					// itemData:this.tableData2[index],
                 }
                 this.$refs.employeesDialog.employeesDataFn(refsEmployeesData)

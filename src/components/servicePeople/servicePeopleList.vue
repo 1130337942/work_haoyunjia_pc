@@ -7,6 +7,7 @@
 */
 <template>
 	<div>
+		<!-- {{getUserCode}}服务人员 -->
 		<div class="clearfix referResult">
 			<div style='width:100%;'>
 				<p style='font-size:16px;font-family:PingFangSC;font-weight:1000;color:rgba(0,0,0,0.85);margin-bottom:15px;'>客户列表</p>
@@ -34,9 +35,9 @@
 		</div>
 		<div class="clearfix tasksResult">
 			<div class="left">
-				<el-button type="primary" icon="el-icon-search" size='mini' @click="List2">查询</el-button>
-				<el-button size="mini" @click="toLead = true">导入分配</el-button>
-				<el-button size="mini" @click=Derive>导出</el-button>
+				<el-button v-show="code['servicePeopleList1']" type="primary" icon="el-icon-search" size='mini' @click="List2">查询</el-button>
+				<el-button v-show="code['servicePeopleList2']" size="mini" @click="toLead = true">导入分配</el-button>
+				<el-button v-show="code['servicePeopleList3']" size="mini" @click=Derive>导出</el-button>
 			</div>
 		</div>
 		<!--表格-->
@@ -81,9 +82,9 @@
 		<div class="clearfix tasksResult">
 			<div class="left">
 				<p style='font-size:16px;font-family:PingFangSC;font-weight:1000;color:rgba(0,0,0,0.85);margin-bottom:15px;'>服务人员列表</p>
-				<el-button size="mini" @click=assignRoles>添加</el-button>
-				<el-button size="mini" @click=DeriveServe>导出</el-button>
-				<el-button size="mini" @click=DeleteList>移除</el-button>
+				<el-button v-show="code['servicePeopleList5']" size="mini" @click=assignRoles>添加</el-button>
+				<el-button v-show="code['servicePeopleList4']" size="mini" @click=DeriveServe>导出</el-button>
+				<el-button v-show="code['servicePeopleList5']" size="mini" @click=DeleteList>移除</el-button>
 			</div>
 		</div>
 		<!--表格2-->
@@ -426,10 +427,47 @@ export default {
                     picker.$emit('pick', [start, end]);
                     }
                 }]
-            },	
+			},
+			code:{
+				'servicePeopleList1':false,//查看
+				'servicePeopleList2':false,//导入分配人员
+				'servicePeopleList3':false,//客户导出
+				'servicePeopleList4':false,//服务人员导出
+				'servicePeopleList5':false,//添加&移除服务人员
+			},
+			getUserCode:[]
 		}
 	},
+	created() {
+		this.getUserCodeFn()
+
+		var $cookie = this.$cookie;
+		this.$cookie.get('token');
+		this.List1();
+	},
+	
 	methods: {
+		//获取权限列表
+		async getUserCodeFn(){
+			try{
+				let data = this.$codePostObj()
+				let res = await this.$ifUserIsRoleFn(data)
+					// console.log(res)
+				this.getUserCode = res.data
+				this.isCodeTrueFn()
+			}catch(error){
+				console.log(error)
+			}
+                
+		},
+		//当前页面有权限为true
+		isCodeTrueFn(){
+			if(this.getUserCode.length == 0 )return false
+			let codeJson= this.$codeJson()
+			this.getUserCode.forEach((item)=>{
+				this.code[codeJson[item]] = true
+			});
+		},
 		//客户 分页
 		handleSizeChange(val) {
 			//   console.log(`每页 ${val} 条`)
@@ -475,6 +513,7 @@ export default {
 		},
 		//客户列表
 		List1() {
+			if(!this.code['servicePeopleList1']) return false //没有查看权限功能
 			let param = {param:JSON.stringify({
 					companyId: this.$cookie.get('currentCompanyId'), //公司ID
 					partnerCompanyName: this.partnerCompanyName, 
@@ -803,20 +842,21 @@ export default {
                 })}
 				serveTemplateUrl(param).then(result => {
 					if (result.code == '000000') {
-					this.$axios({
-						method: 'get',
-						url: result.data.url,
-						responseType: 'arraybuffer'
-					})
-					.then(response => {
-						const url = window.URL.createObjectURL(new Blob([response.data]));
-						const link = document.createElement('a');
-						link.href = url;
-						link.setAttribute('download', result.data.name ); //or any other extension
-						document.body.appendChild(link);
-						link.click();
-					})
-					.catch(() => console.log('error occured'));
+						let potstUrl = '/' + result.data.url.split('/').slice(3).join('/');	
+						this.$axios({
+							method: 'get',
+							url: potstUrl,
+							responseType: 'arraybuffer'
+						})
+						.then(response => {
+							const url = window.URL.createObjectURL(new Blob([response.data]));
+							const link = document.createElement('a');
+							link.href = url;
+							link.setAttribute('download', result.data.name ); //or any other extension
+							document.body.appendChild(link);
+							link.click();
+						})
+						.catch(() => console.log('error occured'));
 					} 
 					else if (result.code == '100000') {
 						//失败
@@ -933,11 +973,7 @@ export default {
             this.dialogRole = false;
 		}
 	},
-	created() {
-		var $cookie = this.$cookie;
-		this.$cookie.get('token');
-		this.List1();
-	}
+	
 }
 </script>
 <style lang="scss">

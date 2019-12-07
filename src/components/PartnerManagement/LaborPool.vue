@@ -7,7 +7,7 @@
 */
 <template>
 	<div>
-		{{getUserCode}}用工池
+		<!-- {{getUserCode}}用工池 -->
 		<div class="clearfix referResult">
 			<div style='width:100%;'>
 				<ul class='clearfix top_screen'>
@@ -208,54 +208,39 @@ export default {
 				'LaborPool6':false,//银行卡管理
 				'LaborPool7':false,//合作状态管理
 			},
-			isCode : false
+			getUserCode:[],
 		}
 	},
-	computed:{
-		...mapState(['getUserCode'])
-	},
 	created() {
+		this.getUserCodeFn()
+
 		var $cookie = this.$cookie;
 		this.$cookie.get('token');
 		this.getDictItemsByCodes1();
 		this.List1();
 	},
-	watch:{
-		// //处理权限code编码
-		getUserCode(){
-			console.log(this.getUserCode)
-			console.log(this.code['LaborPool1']+'----LaborPool1用工池')
-			if(this.getUserCode.length == 0) return 
-			let codeJson= this.$codeJson();
+	methods: {
+		//获取权限列表
+		async getUserCodeFn(){
+                try{
+                   	let data = this.$codePostObj()
+                    let res = await this.$ifUserIsRoleFn(data)
+						// console.log(res)
+					this.getUserCode = res.data
+					this.isCodeTrueFn()
+                }catch(error){
+                    console.log(error)
+                }
+                
+		},
+		//当前页面有权限为true
+		isCodeTrueFn(){
+			if(this.getUserCode.length == 0 )return false
+			let codeJson= this.$codeJson()
 			this.getUserCode.forEach((item)=>{
 				this.code[codeJson[item]] = true
-			})
-			// if(this.isCode ){
-			// 	if(this.getUserCode.length == 0) return false
-			// 	let codeJson= this.$codeJson()
-			// 	this.getUserCode.forEach((item)=>{
-			// 		this.code[codeJson[item]] = true
-			// 	});
-			// 	this.isCode = false
-			// 	console.log(this.code['LaborPool1']+'----LaborPool1用工池')
-			// }
-		}
-	},
-	activated(){
-		// console.log(this.code['LaborPool1']+'----LaborPool1用工池')
-		// if(this.getUserCode.length <= 0  ){
-		// 	this.isCode = true
-		// }else{
-		// 	this.isCode = false
-		// } 
-		// if(this.getUserCode.length == 0 )return false
-		// let codeJson= this.$codeJson()
-		// this.getUserCode.forEach((item)=>{
-		// 	this.code[codeJson[item]] = true
-		// })
-		
-	},
-	methods: {
+			});
+		},
 		//获取类型id
 		selectContract(vId){
 			this.companyType = vId

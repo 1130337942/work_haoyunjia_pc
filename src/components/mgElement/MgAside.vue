@@ -20,6 +20,7 @@
                 sliderData:testSliderData,
                 thisPath:'',
                 menuItemNum:3,//没有子层级
+                thisRouter:{}
             }
         },
         computed:{
@@ -41,13 +42,29 @@
         methods: {
             ...mapMutations(['commitPostUserCodeFn']),
             getRouteFn(){
-                this.thisPath = this.$route.path
+                this.thisPath = this.$route.path;
+
+                this.thisRouterDataFn(this.sliderData)
+                if(!this.thisRouter.code) return
+                // console.log(this.thisRouter.code)
+                this.commitPostUserCodeFn(this.thisRouter.code)
+                
             },
             thisItemFn(item){
                 this.$router.push(item.path);
-                if(!item.code)return
-                this.commitPostUserCodeFn(item.code)
-            }
+               
+            },
+            thisRouterDataFn(data){
+                data.forEach((item)=>{
+                    if(item.children){
+                        this.thisRouterDataFn(item.children)
+                    }
+                    if(item.path == this.$route.path){
+                        this.thisRouter = item
+                    }
+                    
+                });
+            },
         }
     }
 </script>

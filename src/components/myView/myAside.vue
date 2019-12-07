@@ -13,13 +13,15 @@
 </template>
 <script>
     import { getPcMenusByOrgId } from '@/api/matchesModule/matchesApi';
-    import { getCompanyId } from '@/api/cookieStorage';
+    import {ifUserIsRole} from '@/api/mgModule/authorityApi'
+    import * as auth from '@/api/cookieStorage'
     import { mapMutations,mapActions } from 'vuex'
+import { json } from 'body-parser';
     export default {
         name: 'ProductCenter',
         data() {
             return {
-                companyId:getCompanyId(),
+                companyId:auth.getCompanyId(),
                 sideData:[],//侧边栏数据
                 thisPath:'',//当前路由
                 thisRouter:{},
@@ -42,12 +44,11 @@
                 if(!this.thisRouter.code) return
                 this.commitPostUserCodeFn(this.thisRouter.code)
                 //获取是否有权限
-		        this.getUserCodeFn();
+                // this.getUserCodeFn();
             },
             // 点击左侧导航跳转右侧内容区域
             goPath(item) {
                 this.$router.push(item.path);
-                //  this.commitPostUserCodeFn(item.code)
             },
             //菜单配置
             async getPcMenusByOrgIdFn(){
@@ -73,7 +74,8 @@
                     }
                    
                 });
-            }
+            },
+            
         }
        
     }

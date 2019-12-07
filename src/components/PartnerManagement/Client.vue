@@ -208,30 +208,54 @@ export default {
 				'Client6':false,//银行卡管
 				'Client7':false,//合作状态管理
 				'Client8':false,//导出
-			}
+			},
+			getUserCode:[],
 		}
 	},
 	computed:{
-		...mapState(['getUserCode'])
+		// ...mapState(['getUserCode']),
+		...mapState(['postUserCode']),
 	},
 	watch:{
 		//处理权限code编码
-		getUserCode(){
-			console.log(this.getUserCode)
-			if(this.getUserCode.length == 0) return false
-			let codeJson= this.$codeJson()
-			this.getUserCode.forEach((item)=>{
-				this.code[codeJson[item]] = true
-			})
-		}
+		// getUserCode(){
+		// 	console.log(this.getUserCode)
+		// 	if(this.getUserCode.length == 0) return false
+		// 	let codeJson= this.$codeJson()
+		// 	this.getUserCode.forEach((item)=>{
+		// 		this.code[codeJson[item]] = true
+		// 	})
+		// }
 	},
 	created() {
+		this.getUserCodeFn()
+
 		var $cookie = this.$cookie;
 		this.$cookie.get('token');
 		this.getDictItemsByCodes1();
 		this.List1();
 	},
 	methods: {
+		// ...mapActions(['getUserCodeFn']),
+		//获取权限列表
+		async getUserCodeFn(){
+			try{
+				let data = this.$codePostObj()
+				let res = await this.$ifUserIsRoleFn(data);
+				this.getUserCode = res.data
+				this.isCodeTrueFn()
+			}catch(error){
+				console.log(error)
+			}   
+		},
+		//当前页面有权限为true
+		isCodeTrueFn(){
+			if(this.getUserCode.length == 0 )return false
+			let codeJson= this.$codeJson()
+			this.getUserCode.forEach((item)=>{
+				this.code[codeJson[item]] = true
+			});
+		},
 		//获取类型id
 		selectContract(vId){
 			this.companyType = vId

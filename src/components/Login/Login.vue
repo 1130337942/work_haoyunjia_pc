@@ -28,11 +28,11 @@
       </div>
       <!--手机号登陆-->
       <div ref="Phone" v-else-if="flag == 1">
-        <el-form class="login-form" autocomplete="on" label-position="left">
+        <el-form class="login-form"  label-position="left">
           <div style="padding:30px;">
             <h3 class="title">{{indexTitle}}</h3>
-            <el-form-item>
-              <el-input v-model="userName" placeholder="请输入手机号" class="username"></el-input>
+            <el-form-item >
+              <el-input v-model="tel" placeholder="请输入手机号" maxlength="11" class="username" ></el-input>
             </el-form-item>
             <el-form-item>
               <el-input placeholder="请输入登陆密码" v-model="password" type="password" class="password"></el-input>
@@ -42,6 +42,7 @@
                 type="warning"
                 style="background: rgb(231, 154, 24); width:100%;height:54px;font-size:18px;"
                 @click="log_in()"
+                @keyup.enter.native="loginEnterFn"
               >登陆</el-button>
             </el-form-item>
             <p class="clearfix">
@@ -113,7 +114,7 @@ export default {
   },
   data() {
     return {
-      userName: "",
+      tel: "",
       password: "",
       error: false,
       success: true,
@@ -124,14 +125,36 @@ export default {
       copyrightDiy:'2019繁昌一招盈人力资源服务有限公司',
       indexTitle:'',
       note:{
-       // background: url("../../assets/img/login.jpg"),
-       backgroundImage: "url(" + localStorage.getItem('backgroundImage') + ")",
+        // background: url("../../assets/img/login.jpg"),
+        backgroundImage: "url(" + localStorage.getItem('backgroundImage') + ")",
         backgroundRepeat:"no-repeat",
         backgroundPosition:'center'
       }
     };
   },
+  watch:{
+    tel(){
+      this.tel = this.tel.replace(/\s+/g,'')
+    }
+  },
+  created(){
+    var _this = this;
+    document.onkeydown = function(e) {
+      let key = window.event.keyCode;
+      if (key == 13) {
+        _this.loginEnterFn();
+      }
+    };
+  },
+  mounted(){
+    //个性化配置
+    this.copyrightDiy = localStorage.getItem('copyrightDiy');
+    this.indexTitle = localStorage.getItem('indexTitle');
+  },
   methods: {
+    loginEnterFn(){
+      this.log_in()
+    },
     submitForm(formName) {
         this.$refs[formName].validate((valid) => {
           if (valid) {
@@ -169,7 +192,7 @@ export default {
       var $cookie = this.$cookie;
      // let sha256 = require("js-sha256").sha256;//这里用的是require方法
       let param = {param:JSON.stringify({
-              mobile:this.userName,
+              mobile:this.tel,
              // passwd:sha256(this.password)
               passwd:this.password
           })
@@ -181,12 +204,12 @@ export default {
                   this.$cookie.set('token',result.data.token)
                   this.$cookie.set('currentCompanyName',result.data.currentCompanyName)
                   this.$cookie.set('currentCompanyId',result.data.currentCompanyId)
-                  this.$cookie.set('mobile',this.userName)
+                  this.$cookie.set('mobile',this.tel)
                   this.$cookie.set('userId',result.data.userId)
                   this.$cookie.set('headPortraitAttachment',result.data.headPortraitAttachment)
                   this.$cookie.set('tabIcon',result.data.tabIcon)
                   this.$cookie.set('userName',result.data.userName)
-                  localStorage.setItem("mobile",this.userName);
+                  localStorage.setItem("mobile",this.tel);
                   localStorage.setItem("passwd",this.password);
                   localStorage.setItem("key_token", result.data.token);
                   this.$router.push('/index');
@@ -198,11 +221,7 @@ export default {
           })
       },
     },
-    mounted(){
-      //个性化配置
-      this.copyrightDiy = localStorage.getItem('copyrightDiy');
-      this.indexTitle = localStorage.getItem('indexTitle');
-    },
+   
   // created(){
   //  // console.log(process.env.VUE_APP_basic,process.env.VUE_APP_export,process.env.VUE_APP_dfs);
   //  this.getByOrgAndCompanyId1();

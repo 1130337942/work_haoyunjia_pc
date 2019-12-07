@@ -15,20 +15,22 @@ const sliderData = [
         path:'/PermissionsManagement',
         code:'4=1=1_4'
     },
-    {
-        name:'企业设置',
-        // id:"aside2",
-        child:[
-            {
-                name:'基础设置',
-                path:'/CompanyBasisSet'
-            },
-            {
-                name:'短信模板',
-                path:'/CompanySmsSet'
-            },
-        ]
-    },
+    // {
+    //     name:'企业设置',
+    //     // id:"aside2",
+    //     child:[
+    //         {
+    //             name:'基础设置',
+    //             path:'/CompanyBasisSet',
+    //             code:'4=1=3'
+    //         },
+    //         {
+    //             name:'短信模板',
+    //             path:'/CompanySmsSet',
+    //             code:'4=1=3'
+    //         },
+    //     ]
+    // },
    
 ]
 export default sliderData

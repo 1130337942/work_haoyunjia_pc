@@ -7,6 +7,7 @@
 */
 <template>
     <div>
+        <!-- {{getUserCode}}请求监控 -->
             <div class="clearfix referResult">
                <div class="left" style='width:100%;'>
                 <ul class='clearfix top_screen'>
@@ -84,7 +85,7 @@
             </div>
             <div class="clearfix tasksResult">
                 <div class="left">
-                    <el-button type="primary" icon="el-icon-search" size='mini' @click="List2">查询</el-button>
+                    <el-button v-show="code['RequestMonitor1']" type="primary" icon="el-icon-search" size='mini' @click="List2">查询</el-button>
                 </div>
                 <!-- <div class="right">
                     <el-button size="mini" @click=refresh >刷新</el-button>
@@ -364,10 +365,42 @@ let _loadsh = require('loadsh');
                     fontSize:'14px',
                     fontFamily: "PingFangSC-Medium",
                     fontWeight:500,
-                }
+                },
+                code:{
+                    'RequestMonitor1':false,//查看
+                },
+                getUserCode:[]
             }
         },
+        created(){
+            this.getUserCodeFn()
+
+            this.getRequestCode1(); 
+            this.schedule();
+          //  this.state();
+          //this.List();
+        },
         methods: {
+            //获取权限列表
+            async getUserCodeFn(){
+                try{
+                    let data = this.$codePostObj()
+                    let res = await this.$ifUserIsRoleFn(data)
+                        // console.log(res)
+                    this.getUserCode = res.data
+                    this.isCodeTrueFn()
+                }catch(error){
+                    console.log(error)
+                } 
+            },
+            //当前页面有权限为true
+            isCodeTrueFn(){
+                if(this.getUserCode.length == 0 )return false
+                let codeJson= this.$codeJson()
+                this.getUserCode.forEach((item)=>{
+                    this.code[codeJson[item]] = true
+                });
+            },
             //窗口内分页
             handleSizeChangeContract(val) {
              //   console.log(`每页 ${val} 条`);
@@ -420,7 +453,8 @@ let _loadsh = require('loadsh');
             //     this.List();   
             // },   
             //列表
-            List(){        
+            List(){      
+                if(!this.code['RequestMonitor1']) return false //没有查看权限功能      
                 let param = {param:JSON.stringify({
                        belongCompanyId: this.$cookie.get('currentCompanyId'), //公司ID
                        workNameText:this.company_name,
@@ -677,12 +711,7 @@ let _loadsh = require('loadsh');
                     }
             },500),
         },
-        created(){
-            this.getRequestCode1(); 
-            this.schedule();
-          //  this.state();
-          //this.List();
-        }
+       
     }
 </script>
 <style lang="scss">

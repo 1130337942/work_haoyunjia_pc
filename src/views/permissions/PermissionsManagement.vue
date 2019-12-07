@@ -2,7 +2,9 @@
 权限管理
  */
  <template>
+  
      <div class="PermissionsManagement">
+       <!-- <div style="top: 89px;position: absolute;">{{getUserCode}}权限管理</div> -->
         <div class="cont-left">
             <el-input
                 placeholder="请输入关键词搜索"
@@ -39,18 +41,18 @@
                             size="mini"
                             class="color-FD6427"
                             @click="() => editRolesFn(data)"
-                            v-if="data.category == 1">
+                            v-if="data.category == 1 || code['PermissionsManagement3']">
                             修改
                         </el-button>
                     </span>
                 </span>
             </el-tree>
-            <el-button class="add-but-left" @click="addRoleFn" type="primary">添加</el-button>
+            <el-button v-show="code['PermissionsManagement3']" class="add-but-left" @click="addRoleFn" type="primary">添加</el-button>
         </div>
         <div class="cont-right">
             <div class="cont1">
                 <span class="fz-18 font-bold">{{roleItemData.name}}</span>
-                <div v-show="roleItemData.name" @click="editRole_Fn" class="color-FD6427 fz-14 edit-txt">修改</div>
+                <div  v-show="roleItemData.name || code['PermissionsManagement3']" @click="editRole_Fn" class="color-FD6427 fz-14 edit-txt">修改</div>
             </div>
             <div class="cont2">
                 <div class="div-c2-1">
@@ -59,7 +61,7 @@
                         <span class="fz-14">权限列表</span>
                         <!-- <span class="fz-12 color-B3B3B3 span2">已选择3个功能，6个权限</span> -->
                    </div>
-                   <el-button v-show="tableTreeData.length>0" @click="searveFn" type="primary">保存</el-button>
+                   <el-button v-show="tableTreeData.length>0 || code['PermissionsManagement4']" @click="searveFn" type="primary">保存</el-button>
                 </div><!-- :load="load" lazy border--->
                 <el-table 
                         v-loading="tableTreeLoading"
@@ -102,39 +104,41 @@
                         </template>
                     </el-table-column>
                 </el-table>
-                <div class="div-c2-2">
-                    <div class="fz-14">
-                        <img class="icon-img" src="@/assets/img/management/Permissions_4.png" alt="">
-                        成员列表
+                <div v-show="code['PermissionsManagement5']">
+                    <div class="div-c2-2" >
+                        <div class="fz-14">
+                            <img class="icon-img" src="@/assets/img/management/Permissions_4.png" alt="">
+                            成员列表
+                        </div>
+                        <div v-show="roleItemData.name">
+                            <el-button v-show="code['PermissionsManagement6']" @click="addMembersFn" type="primary">添加</el-button>
+                            <el-button v-show="code['PermissionsManagement2']" @click="delMembersFn" type="danger">移除</el-button>
+                        </div>
                     </div>
-                    <div v-show="roleItemData.name">
-                        <el-button @click="addMembersFn" type="primary">添加</el-button>
-                        <el-button @click="delMembersFn" type="danger">移除</el-button>
-                    </div>
+                    <el-table
+                    v-loading="tableLoading"
+                    ref="multipleTable"
+                    :data="membersListData"
+                    style="width:100%"
+                    :row-style="{height:'45px'}"
+                    :header-cell-style="{height:'45px'}"
+                    @selection-change="membersListTrueFn"> 
+                        <el-table-column type="selection" ></el-table-column>
+                        <el-table-column prop="userName" label="姓名"></el-table-column>
+                        <el-table-column prop="mobile" label="手机号" ></el-table-column>
+                        <el-table-column prop="jobNumber" label="工号" ></el-table-column>
+                        <el-table-column label='部门' >
+                            <template  slot-scope="scope" >{{ scope.row.departmentText }}</template>
+                        </el-table-column>
+                        <el-table-column label='岗位'>
+                            <template  slot-scope="scope">{{ scope.row.positionName }}</template>
+                        </el-table-column>
+                        <el-table-column label='在职状态'>
+                            <template  slot-scope="scope">{{ scope.row.workStatus==1?'在职':'离职' }}</template>
+                        </el-table-column>
+                        <!--show-overflow-tooltip-->
+                    </el-table>
                 </div>
-                <el-table
-                v-loading="tableLoading"
-                ref="multipleTable"
-                :data="membersListData"
-                style="width:100%"
-                :row-style="{height:'45px'}"
-                :header-cell-style="{height:'45px'}"
-                @selection-change="membersListTrueFn"> 
-                    <el-table-column type="selection" ></el-table-column>
-                    <el-table-column prop="userName" label="姓名"></el-table-column>
-                    <el-table-column prop="mobile" label="手机号" ></el-table-column>
-                    <el-table-column prop="jobNumber" label="工号" ></el-table-column>
-                    <el-table-column label='部门' >
-                        <template  slot-scope="scope" >{{ scope.row.departmentText }}</template>
-                    </el-table-column>
-                    <el-table-column label='岗位'>
-                        <template  slot-scope="scope">{{ scope.row.positionName }}</template>
-                    </el-table-column>
-                    <el-table-column label='在职状态'>
-                        <template  slot-scope="scope">{{ scope.row.workStatus==1?'在职':'离职' }}</template>
-                    </el-table-column>
-                    <!--show-overflow-tooltip-->
-                </el-table>
             </div>
         </div>
         <add-role-el :isShow='isRoleShow'
@@ -148,7 +152,6 @@
         @closeDialogMembersFn='closeDialogMembersFn'
         ref="membersDialog">
         </add-members-el>
-        {{getUserCode}}
      </div>
  </template>
  
@@ -167,6 +170,7 @@
     import {departmentDisposeFn} from '@/assets/js/common'
     import {mapState,mapGetters,mapActions} from 'vuex'
     export default {
+        name:'PermissionsManagement',
         data(){
             return{
                 companyId:getCompanyId(),//公司id
@@ -187,32 +191,58 @@
                 serveTrueData:[], //保存 权限  true  的数据
                 treeKey1:[],//树形结构默认展开第一个
                 checkedKey1:'',//默认选中第一个
-                // getUserCode:[],//权限编码
+                code:{
+                    'PermissionsManagement1':false,//查看
+                    'PermissionsManagement2':false,//删除
+                    'PermissionsManagement3':false,//添加&编辑角色
+                    'PermissionsManagement4':false,//权限管理
+                    'PermissionsManagement5':false,//角色员工查看(查看列表)
+                    'PermissionsManagement6':false,//角色成员管理
+                },
+                getUserCode:[],//权限编码
             }
         },
         components:{
             addRoleEl,//添加角色和角色组
             addMembersEl,//添加成员
         },
-        computed:{
-            ...mapGetters(['getUserCode'])
-        },
         watch: {
             searchVal(val) {
                 this.$refs.tree.filter(val);
-            }
+            },
         },
         created(){
-            //角色列表
-            this.getRoleSetByCompanyIdFn();
-            
             this.getUserCodeFn()
+            
+            
         },
         methods: {
-            ...mapActions(['getUserCodeFn']),
+           //获取权限列表
+            async getUserCodeFn(){
+                try{
+                    let data = this.$codePostObj()
+                    let res = await this.$ifUserIsRoleFn(data)
+                        // console.log(res)
+                    this.getUserCode = res.data
+                    this.isCodeTrueFn();
+                    //角色列表
+                    this.getRoleSetByCompanyIdFn();
+                }catch(error){
+                    console.log(error)
+                } 
+            },
+            //当前页面有权限为true
+            isCodeTrueFn(){
+                if(this.getUserCode.length == 0 )return false
+                let codeJson= this.$codeJson()
+                this.getUserCode.forEach((item)=>{
+                    this.code[codeJson[item]] = true
+                });
+                
+            },
             //点击角色列表
             treeClickFn(roleData,Node,el){
-                console.log(roleData)
+                // console.log(roleData)
                 if(!roleData.category){
                     this.roleItemData = {//当前角色数据
                         name:roleData.name,
@@ -325,10 +355,17 @@
             },
             //获取角色组列表
             async getRoleSetByCompanyIdFn(){
+                //没有查看权限功能
+                if(!this.code['PermissionsManagement1']){
+                    this.tableTreeLoading = false;
+                    this.tableLoading = false
+                    return false 
+                } 
                 try{
                     let data = {
                         companyId:this.companyId
                     }
+                    
                     let res = await getRoleSetByCompanyId(data)
                     // console.log(res)
                     this.roleData = res.data;
@@ -377,6 +414,7 @@
             },
             //获取成员列表
             async getRoleUserByCompanyIdFn(){
+                
                 try{
                     let data = {
                         companyId:this.companyId,
@@ -426,7 +464,7 @@
                 //修改setPcOrAppRole值
                 this.setPcOrAppRoleFn(this.tableTreeData)
                 this.getFn(this.tableTreeData)
-                console.log(this.serveTrueData)
+                // console.log(this.serveTrueData)
                 //权限保存post请求
                 this.permissionsSaveFn()
             },
@@ -445,7 +483,7 @@
                     pcOrAppRole,
                     roleId:this.roleId
                 }
-                console.log(data)
+                // console.log(data)
                 try{
                     let res = await updateResource(data)
                     this.$message({

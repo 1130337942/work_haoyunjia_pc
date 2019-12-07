@@ -158,14 +158,12 @@
         </template>
       </li>
       <li class="left">{{userName}}</li>
-      <li class="left" style="width:80px;">
+      <li class="left" style="width:80px;" @click="logout1">
         <img
           src="./../../assets/index/userQuit.png"
-          alt
-          @click="logout1"
           style="width: auto;height: auto;max-width: 25%;max-height: 25%;margin-right:5px;"
         />
-        <span>退出</span>
+        <span class="hoverClass">退出</span>
       </li>
     </ul>
   </div>
@@ -241,6 +239,7 @@ export default {
 };
 </script>
 <style lang="scss">
+
 .left_agency {
   color: #ffffff;
   border: 0;
@@ -256,7 +255,8 @@ export default {
   background: transparent;
 }
 </style>
-<style scoped>
+<style scoped lang="scss">
+$C_409EFF:#409EFF;
 /*top导航*/
 .top_text {
   color: #ffffff;
@@ -270,6 +270,10 @@ export default {
   cursor: pointer;
   /* height: 40px;
   line-height: 40px; */
+  &:hover{
+    color: $C_409EFF;
+  }
+  
 }
 .top_text ul:nth-child(1) li:nth-child(1) {
   margin-right: 10px;

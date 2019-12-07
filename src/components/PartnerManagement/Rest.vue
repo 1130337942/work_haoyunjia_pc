@@ -7,6 +7,7 @@
 */
 <template>
 	<div>
+		<!-- {{getUserCode}}其他 -->
 		<div class="clearfix referResult">
 			<div style='width:100%;'>
 				<ul class='clearfix top_screen'>
@@ -69,8 +70,8 @@
 		</div>
 		<div class="clearfix tasksResult">
 			<div class="left">
-				<el-button type="primary" icon="el-icon-search" size='mini' @click="List2">查询</el-button>
-				<el-button size="mini" @click="Derive">导出</el-button>
+				<el-button v-show="code['Rest1']" type="primary" icon="el-icon-search" size='mini' @click="List2">查询</el-button>
+				<el-button v-show="code['Rest8']" size="mini" @click="Derive">导出</el-button>
 			</div>
 			<!-- <div class="right">
 				<el-button size="mini" @click="refresh">刷新</el-button>
@@ -195,24 +196,64 @@ export default {
 				fontSize: '14px',
 				 fontFamily: "思源",
 				fontWeight: 500
-			}
+			},
+			code:{
+				'Rest1':false,//查看
+				'Rest2':false,//新建
+				'Rest4':false,//基本信息编辑
+				'Rest5':false,//业务角色编辑
+				'Rest6':false,//银行卡管理
+				'Rest7':false,//合作状态管理
+				'Rest8':false,//导出
+			},
+			getUserCode:[]
+			
 		}
 	},
-	methods: {
-	//获取类型id
-	selectContract(vId){
-		this.companyType = vId
+	created() {
+		this.getUserCodeFn()
+
+		var $cookie = this.$cookie;
+		this.$cookie.get('token');
+		this.getDictItemsByCodes1();
+		this.List1();
 	},
-	//创建时间
-    getSqlBeginDate(val) {
-		if(this.sqlDate != null){
-            this.sqlBeginDate = this.sqlDate[0];
-            this.sqlEndDate = this.sqlDate[1];
-        }else if(this.sqlDate == null){
-            this.sqlBeginDate = '';
-            this.sqlEndDate = '';
-        }
-    },
+	methods: {
+		//获取权限列表
+		async getUserCodeFn(){
+                try{
+                   	let data = this.$codePostObj()
+                    let res = await this.$ifUserIsRoleFn(data)
+						// console.log(res)
+					this.getUserCode = res.data
+					this.isCodeTrueFn()
+                }catch(error){
+                    console.log(error)
+                }
+                
+		},
+		//当前页面有权限为true
+		isCodeTrueFn(){
+			if(this.getUserCode.length == 0 )return false
+			let codeJson= this.$codeJson()
+			this.getUserCode.forEach((item)=>{
+				this.code[codeJson[item]] = true
+			});
+		},
+		//获取类型id
+		selectContract(vId){
+			this.companyType = vId
+		},
+		//创建时间
+		getSqlBeginDate(val) {
+			if(this.sqlDate != null){
+				this.sqlBeginDate = this.sqlDate[0];
+				this.sqlEndDate = this.sqlDate[1];
+			}else if(this.sqlDate == null){
+				this.sqlBeginDate = '';
+				this.sqlEndDate = '';
+			}
+		},
 		//分页
 		handleSizeChange(val) {
 			//   console.log(`每页 ${val} 条`)
@@ -298,6 +339,7 @@ export default {
 		},
 		//列表
 		List1: _loadsh.debounce(function(){  
+			if(!this.code['Rest1']) return false //没有查看权限功能
 			let param = {param:JSON.stringify({
 					companyId: this.$cookie.get('currentCompanyId'), //公司ID
 					keyword: this.Findkeyword, //搜索关键字
@@ -346,12 +388,7 @@ export default {
 			this.List1()
 		},
 	},
-	created() {
-		var $cookie = this.$cookie;
-		this.$cookie.get('token');
-		this.getDictItemsByCodes1();
-		this.List1();
-	}
+	
 }
 </script>
 <style lang="scss">
