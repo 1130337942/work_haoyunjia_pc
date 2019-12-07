@@ -54,6 +54,7 @@ img{
 .padding-20{
     padding: 20px;
 }
+//主题颜色
 $cTheme:#44C9A8;
 .color-theme{
     color: $cTheme;
@@ -64,14 +65,22 @@ $cTheme:#44C9A8;
 .color-B3B3B3{
     color:#B3B3B3;
 }
-
-// 按钮but
-.el-button--warning{
-    background-color:$cTheme;
-    border-color:$cTheme;
-    &:hover {
-        background: #2DAE8F;
-        border-color: #2DAE8F;
-        color: #FFF;
-    }
+//表格文字链接跳转颜色
+.span-link{
+    color:#00BCF1;
+    cursor: pointer;
 }
+//带图标icon按钮
+.el-button--mini{
+	padding: 6px 15px;
+}
+.el-button--primary{
+	/deep/i{
+		font-size: 14px;
+		font-weight: bold;
+	}
+	/deep/[class*=el-icon-]+span{
+		margin-left: 2px;
+	}
+}
+

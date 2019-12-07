@@ -111,6 +111,22 @@ let routes = [
                     }
                 },
                 {
+                    path: '/partnersAdd',// 合作商管理 其他
+                    name: 'partnersAdd',
+                    component: () => import (/*webpackChunkName:'ImportHYJ'*/ '@/views/businessModule/partnersAddorInfo'),
+                    meta: {
+                        name: '合作商新增',
+                    }
+                },
+                {
+                    path: '/partnersInfo',// 合作商管理 其他
+                    name: 'partnersInfo',
+                    component: () => import (/*webpackChunkName:'ImportHYJ'*/ '@/views/businessModule/partnersAddorInfo'),
+                    meta: {
+                        name: '合作商详情',
+                    }
+                },
+                {
                     path: '/servicePeopleList',// 服务人员管理 服务人员
                     name: 'servicePeopleList',
                     component: () => import (/*webpackChunkName:'ImportHYJ'*/ '@/components/servicePeople/servicePeopleList'),
@@ -190,19 +206,7 @@ router.beforeEach((to,from,next)=>{
         if(token === '') {
             next('/getByOrgAndCompanyId');
         }else {
-          
-            next();
-            // let tabArr1 = JSON.parse(sessionStorage.tabArr1);
-            // let isfind =  tabArr1.some(item=>  item.name == to.meta.name )
-            // console.log(tabArr1)
-            // console.log(isfind)
-            // // console.log('keepAlive-----'+to.meta.keepAlive)
-            // // console.log("to----"+to.meta.name,"from------"+from.meta.name)
-            // to.meta.keepAlive = isfind?true:false
-            // console.log('keepAlive-----'+to.meta.keepAlive)
-
-            // console.log(router)
-            
+            next(); 
         }
     }
    

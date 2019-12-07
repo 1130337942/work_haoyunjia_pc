@@ -71,15 +71,16 @@
 		<div class="clearfix tasksResult">
 			<div class="left">
 				<!-- <el-button size="mini" @click="centerDialogVisible = true">新建</el-button> -->
-				<el-button type="primary" icon="el-icon-search" size='mini' @click="List2" v-show="code['Partner1']">查询</el-button>
-				<el-button size="mini" @click="toLead = true" v-show="code['Partner9']">导入</el-button>
-				<el-button size="mini" @click="Derive"  v-show="code['Partner8']">导出</el-button>
-				<el-button size="mini" @click='assignRoles'  v-show="code['Partner10']">分配角色</el-button>
-				<el-button size="mini" style="margin-left: 10px;"  v-show="code['Partner1']">高级搜索</el-button>
+				<el-button size='mini' type="primary" icon="el-icon-search" @click="List2" v-show="code['Partner1']">查询</el-button>
+				<el-button size="mini" type="primary" icon="el-icon-plus"  @click="openPartnersAddFn">新建</el-button>
+				<el-button size="mini" type="primary" icon="el-icon-download" @click="toLead = true" v-show="code['Partner9']">导入</el-button>
+				<el-button size="mini" type="primary" icon="el-icon-upload2" @click="Derive"  v-show="code['Partner8']">导出</el-button>
+				<el-button size="mini" type="primary" icon="el-icon-orange" @click='assignRoles'  v-show="code['Partner10']">分配角色</el-button>
+				<el-button size="mini" type="primary" icon="el-icon-search" style="margin-left: 10px;"  v-show="code['Partner1']">高级搜索</el-button>
 			</div>
 			<div class="right">
-				<el-button size="mini" @click="refresh" v-show="code['Partner1']">刷新</el-button>
-				<el-button size="mini">列表设置</el-button>
+				<el-button size="mini" type="primary" icon="el-icon-refresh" @click="refresh" v-show="code['Partner1']">刷新</el-button>
+				<!-- <el-button size="mini" type="primary">列表设置</el-button> -->
 			</div>
 		</div>
 		<!--表格-->
@@ -93,30 +94,35 @@
 				empty-text="暂未查到匹配条件的数据"
 				:header-cell-style="styleObj"
 			>
-				<el-table-column type="index" label="序号" align="center" fixed="left" width="50"></el-table-column>
-				<el-table-column show-overflow-tooltip prop="importNum" label="批次号" align="center" fixed="left" width="150"></el-table-column>
-				<el-table-column show-overflow-tooltip prop="partnerCode" label="代码" align="center" fixed="left" width="100"></el-table-column>
-				<el-table-column show-overflow-tooltip prop="companyTypeText" label="类型" align="center" width="80"></el-table-column>
-				<el-table-column show-overflow-tooltip prop="certificateStatusPcText" label="认证状态" align="center" width="80"></el-table-column>
-				<el-table-column show-overflow-tooltip prop="partnerCompanyName" label="全称" align="center" width="150"></el-table-column>
-				<el-table-column show-overflow-tooltip prop="partnerShortNameCn" label="简称" align="center" width="80"></el-table-column>
-				<el-table-column show-overflow-tooltip prop="unionCode" label="信用代码/手机号" align="center" width="150"></el-table-column>
-				<el-table-column show-overflow-tooltip prop="partnerShortNameEn" label="英文简称" align="center" width="100"></el-table-column>
-				<el-table-column show-overflow-tooltip prop="idNumber" label="法人身份证号" align="center" width="120"></el-table-column>
-				<el-table-column show-overflow-tooltip prop="showBusinessRoleName" label="业务角色" align="center" width="100"></el-table-column>
-				<el-table-column show-overflow-tooltip prop="labelText" label="标签" align="center" width="80"></el-table-column>
-				<el-table-column show-overflow-tooltip prop="serviceTypeName" label="服务类型" align="center" width="100"></el-table-column>
-				<el-table-column show-overflow-tooltip prop="contacts" label="联系人" align="center" width="80"></el-table-column>
-				<el-table-column show-overflow-tooltip prop="contactsMobile" label="联系人手机号" align="center" width="150"></el-table-column>
-				<el-table-column show-overflow-tooltip prop="contactsPhone" label="联系人电话" align="center" width="100"></el-table-column>
-				<el-table-column show-overflow-tooltip prop="contactsMail" label="联系人邮箱" align="center" width="100"></el-table-column>
-				<el-table-column show-overflow-tooltip prop="ourCsm" label="我方客户经理" align="center" width="150"></el-table-column>
-				<el-table-column show-overflow-tooltip prop="belongDeptName" label="所属部门" align="center" width="100"></el-table-column>
-				<el-table-column show-overflow-tooltip prop="invoicePrefix" label="单据前缀" align="center" width="100"></el-table-column>
-				<el-table-column show-overflow-tooltip prop="isSettlementObject" label="是否结算对象" align="center" width="150"></el-table-column>
-				<el-table-column show-overflow-tooltip prop="createUserName" label="创建人" align="center" width="80"></el-table-column>
-				<el-table-column show-overflow-tooltip prop="createDate" label="创建时间" align="center" width="160"></el-table-column>
-				<el-table-column show-overflow-tooltip prop='taxStatusText' label="临时税务登记" align="center" width="160"></el-table-column>
+				<el-table-column label="序号" fixed="left" type="index"  align="center"  width="50"></el-table-column>
+				<el-table-column label="全称" fixed="left" show-overflow-tooltip prop="partnerCompanyName" align="center" width="150">
+					<template slot-scope="scope">
+						<router-link tag="span" class="span-link" to="/partnersInfo">{{scope.row.partnerCompanyName}}</router-link>
+					</template>
+				</el-table-column>
+				<el-table-column label="简称" fixed="left" show-overflow-tooltip prop="partnerShortNameCn" align="center" width="80"></el-table-column>
+				<el-table-column label="代码" show-overflow-tooltip prop="partnerCode"  align="center"  width="100"></el-table-column>
+				<el-table-column label="英文简称" show-overflow-tooltip prop="partnerShortNameEn"  align="center" width="100"></el-table-column>
+				<el-table-column label="类型" show-overflow-tooltip prop="companyTypeText"  align="center" width="80"></el-table-column>
+				<el-table-column label="认证状态" show-overflow-tooltip prop="certificateStatusPcText"  align="center" width="80"></el-table-column>
+				<el-table-column label="临时税务登记状态" show-overflow-tooltip prop='taxStatusText' align="center" width="160"></el-table-column>
+				<el-table-column label="信用代码/手机号" show-overflow-tooltip prop="unionCode"  align="center" width="150"></el-table-column>
+				<el-table-column label="法人身份证号" show-overflow-tooltip prop="idNumber"  align="center" width="120"></el-table-column>
+				<el-table-column label="业务角色" show-overflow-tooltip prop="showBusinessRoleName" align="center" width="100"></el-table-column>
+				<el-table-column label="标签" show-overflow-tooltip prop="labelText"  align="center" width="80"></el-table-column>
+				<el-table-column label="服务类型" show-overflow-tooltip prop="serviceTypeName" align="center" width="100"></el-table-column>
+				<el-table-column label="联系人" show-overflow-tooltip prop="contacts" align="center" width="80"></el-table-column>
+				<el-table-column label="联系人手机号" show-overflow-tooltip prop="contactsMobile" align="center" width="150"></el-table-column>
+				<el-table-column label="联系人电话" show-overflow-tooltip prop="contactsPhone" align="center" width="100"></el-table-column>
+				<el-table-column label="联系人邮箱" show-overflow-tooltip prop="contactsMail" align="center" width="100"></el-table-column>
+				<el-table-column label="我方客户经理" show-overflow-tooltip prop="ourCsm"  align="center" width="150"></el-table-column>
+				<el-table-column label="所属部门" show-overflow-tooltip prop="belongDeptName"  align="center" width="100"></el-table-column>
+				<el-table-column label="单据前缀" show-overflow-tooltip prop="invoicePrefix" align="center" width="100"></el-table-column>
+				<el-table-column label="是否结算对象" show-overflow-tooltip prop="isSettlementObject"  align="center" width="150"></el-table-column>
+				<el-table-column label="批次号" show-overflow-tooltip prop="importNum"  align="center"  width="150"></el-table-column>
+				<el-table-column label="创建人" show-overflow-tooltip prop="createUserName"  align="center" width="80"></el-table-column>
+				<el-table-column label="创建时间" show-overflow-tooltip prop="createDate"  align="center" width="160"></el-table-column>
+				
 				<el-table-column v-if="code['Partner11']" show-overflow-tooltip prop label="附件" align="center" fixed="right" width="160">
 					<template slot-scope="scope">
                             <div v-if="scope.row.taxStatusText == null" @click='dialog_sponsor(scope.row.freelanceUserId,scope.row.partnerCompanyCode)' class='btn_table'>发起</div>
@@ -603,13 +609,7 @@ export default {
 		// },
 	},
 	activated(){
-		// this.getUserCodeFn()
-		// console.log(this.getUserCode+'----quanbu----')
-		// if(this.getUserCode.length == 0 )return false
-		// let codeJson= this.$codeJson()
-		// this.getUserCode.forEach((item)=>{
-		// 	this.code[codeJson[item]] = true
-		// })
+	
 	},
 	created() {
 		//获取权限列表
@@ -639,9 +639,15 @@ export default {
 			if(this.getUserCode.length == 0 )return false
 			let codeJson= this.$codeJson()
 			this.getUserCode.forEach((item)=>{
-				console.log(codeJson[item])
+				// console.log(codeJson[item])
 				this.code[codeJson[item]] = true
 			});
+		},
+		//新建合作商
+		openPartnersAddFn(){
+			this.$router.push({
+				path:'/partnersAdd'
+			})
 		},
 		//获取类型id
 		selectContract(vId){
@@ -1254,10 +1260,8 @@ export default {
 }
 </style>
 <style lang="scss" scoped>
-.el-button--primary,.el-button--primary:hover,.el-button--primary:active{
-    border-color: rgb(248, 192, 89);
-    outline: 0;
-}
+@import '@/assets/css/public.scss';
+
 .mini_input {
 	width: 140px;
 }
@@ -1320,12 +1324,7 @@ export default {
 	width:60px;
 	text-align: right;
 } 
-//带图标按钮
-.el-button--primary{
-	background-color: #FFF;
-	border: 1px solid #DCDFE6;
-    color: #606266;
-}
+
 //角色分配按钮
 .btnprev,.btnnext,.btnaffirm{
 	padding:10px 60px;
